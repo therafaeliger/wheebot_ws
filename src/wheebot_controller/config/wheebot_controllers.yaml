@@ -6,17 +6,8 @@ controller_manager:
     joint_state_broadcaster:
       type: joint_state_broadcaster/JointStateBroadcaster
 
-    simple_velocity_controller:
-      type: velocity_controllers/JointGroupVelocityController
-
     wheebot_controller:
       type: diff_drive_controller/DiffDriveController
-
-simple_velocity_controller:
-  ros__parameters:
-    joints:
-      - wheel_right_joint
-      - wheel_left_joint
 
 wheebot_controller:
   ros__parameters:
