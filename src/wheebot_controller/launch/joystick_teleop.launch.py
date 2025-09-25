@@ -16,11 +16,10 @@ def generate_launch_description():
     joy_teleop = Node(
         package="joy_teleop",
         executable="joy_teleop",
-        name="joystick",
         parameters=[os.path.join(get_package_share_directory("wheebot_controller"), "config", "joy_teleop.yaml")],
     )
 
     return LaunchDescription([
-        # joy_node,
+        joy_node,
         joy_teleop,
     ])
