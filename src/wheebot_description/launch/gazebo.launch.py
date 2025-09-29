@@ -1,10 +1,11 @@
 import os
+from os import pathsep
 from pathlib import Path
 from ament_index_python.packages import get_package_share_directory
 
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument, SetEnvironmentVariable, IncludeLaunchDescription
-from launch.substitutions import Command, LaunchConfiguration
+from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription, SetEnvironmentVariable
+from launch.substitutions import Command, LaunchConfiguration, PathJoinSubstitution, PythonExpression
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 
 from launch_ros.actions import Node
@@ -20,6 +21,18 @@ def generate_launch_description():
         name="model",
         default_value=os.path.join(wheebot_description_dir, "urdf", "wheebot.urdf.xacro"),
         description="Absolute path to robot URDF file",
+    )
+
+    model_path = str(Path(wheebot_description_dir).parent.resolve())
+    model_path += pathsep + os.path.join(get_package_share_directory("wheebot_description"), 'models')
+
+    world_name_arg = DeclareLaunchArgument(name="world_name", default_value="empty")
+
+    world_path = PathJoinSubstitution([
+            wheebot_description_dir,
+            "worlds",
+            PythonExpression(expression=["'", LaunchConfiguration("world_name"), "'", " + '.world'"])
+        ]
     )
 
     robot_description = ParameterValue(Command([
@@ -39,19 +52,22 @@ def generate_launch_description():
     )
 
     gazebo_resource_path = SetEnvironmentVariable(
-        name="GZ_SIM_RESOURCE_PATH",
-        value=[
-            str(Path(wheebot_description_dir).parent.resolve())
-        ]
+        # name="GZ_SIM_RESOURCE_PATH",
+        # value=[
+        #     str(Path(wheebot_description_dir).parent.resolve())
+        # ]
+
+        "GZ_SIM_RESOURCE_PATH",
+        model_path,
     )
 
     gazebo = IncludeLaunchDescription(
         PythonLaunchDescriptionSource([
             os.path.join(get_package_share_directory("ros_gz_sim"), "launch"), "/gz_sim.launch.py"
         ]),
-        launch_arguments=[
-            ("gz_args", [" -v 4", " -r", " empty.sdf"])
-        ]
+        launch_arguments={
+            "gz_args": PythonExpression(["'", world_path, " -v 4 -r'"])
+        }.items()
     )
 
     gz_spawn_entity = Node(
@@ -70,6 +86,12 @@ def generate_launch_description():
         arguments=[
             "/clock@rosgraph_msgs/msg/Clock[gz.msgs.Clock",
             "/imu@sensor_msgs/msg/Imu[gz.msgs.IMU",
+            "/scan@sensor_msgs/msg/LaserScan[gz.msgs.LaserScan",
+            "/camera/image@sensor_msgs/msg/Image[gz.msgs.Image",
+            "/camera/depth_image@sensor_msgs/msg/Image[gz.msgs.Image",
+            "/camera/points@sensor_msgs/msg/PointCloud2[gz.msgs.PointCloudPacked",
+            "/camera/camera_info@sensor_msgs/msg/CameraInfo[gz.msgs.CameraInfo",
+            "/camera/imu@sensor_msgs/msg/Imu[gz.msgs.IMU",
         ],
         remappings=[
             ("/imu", "/imu/out")
@@ -78,6 +100,7 @@ def generate_launch_description():
 
     return LaunchDescription([
         model_arg,
+        world_name_arg,
         robot_state_publisher_node,
         gazebo_resource_path,
         gazebo,

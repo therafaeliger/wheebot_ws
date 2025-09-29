@@ -1,0 +1,7 @@
+<library path="wheebot_firmware">
+    <class name="wheebot_firmware/WheebotInterface" type="wheebot_firmware::WheebotInterface" base_class_type="hardware_interface::SystemInterface">
+        <description>
+            Wheebot Hardware Interface
+        </description>
+    </class>
+</library>

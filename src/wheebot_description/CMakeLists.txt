@@ -6,9 +6,10 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 endif()
 
 find_package(ament_cmake REQUIRED)
+find_package(urdf REQUIRED)
 
 install(
-  DIRECTORY meshes urdf launch rviz
+  DIRECTORY meshes urdf launch rviz models photos worlds
   DESTINATION share/${PROJECT_NAME}
 )
 

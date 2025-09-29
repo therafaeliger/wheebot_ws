@@ -3,6 +3,7 @@
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="wheebot">
 
     <xacro:arg name="is_ignition" default="true" />
+    <xacro:arg name="is_sim" default="true"/>
 
     <!-- Include Gazebo Parameters -->
     <xacro:include filename="$(find wheebot_description)/urdf/wheebot_gazebo.xacro" />
@@ -26,6 +27,7 @@
             <geometry>
                 <mesh filename="package://wheebot_description/meshes/wheebot_base_link.stl" scale="0.001 0.001 0.001"/>
             </geometry>
+            <material name="silver"/>
         </visual>
         <collision>
             <origin rpy="${pi/2} 0 -${pi/2}" xyz="-0.303 0.2158 0.647"/>
@@ -56,6 +58,7 @@
             <geometry>
                 <mesh filename="package://wheebot_description/meshes/wheebot_wheel_link.stl" scale="0.001 0.001 0.001"/>
             </geometry>
+            <material name="black"/>
         </visual>
         <collision>
             <!-- <origin rpy="0 0 -${pi/2}" xyz="0 0 0"/> -->
@@ -89,6 +92,7 @@
             <geometry>
                 <mesh filename="package://wheebot_description/meshes/wheebot_wheel_link.stl" scale="0.001 0.001 0.001"/>
             </geometry>
+            <material name="black"/>
         </visual>
         <collision>
              <!-- <origin rpy="0 0 ${pi/2}" xyz="0 0 0"/> -->
@@ -121,6 +125,7 @@
             <geometry>
                 <mesh filename="package://wheebot_description/meshes/wheebot_caster_fork_link.stl" scale="0.001 0.001 0.001"/>
             </geometry>
+            <material name="silver"/>
         </visual>
         <collision>
             <origin rpy="${pi/2} 0 0" xyz="-0.0506 0 -0.15"/>
@@ -152,6 +157,7 @@
             <geometry>
                 <mesh filename="package://wheebot_description/meshes/wheebot_caster_wheel_link.stl" scale="0.001 0.001 0.001"/>
             </geometry>
+            <material name="black"/>
         </visual>
         <collision>
             <!-- <origin rpy="0 0 -${pi/2}" xyz="0 0 0"/> -->
@@ -184,6 +190,7 @@
             <geometry>
                 <mesh filename="package://wheebot_description/meshes/wheebot_caster_fork_link.stl" scale="0.001 0.001 0.001"/>
             </geometry>
+            <material name="silver"/>
         </visual>
         <collision>
             <origin rpy="${pi/2} 0 0" xyz="-0.0506 0 -0.15"/>
@@ -215,6 +222,7 @@
             <geometry>
                 <mesh filename="package://wheebot_description/meshes/wheebot_caster_wheel_link.stl" scale="0.001 0.001 0.001"/>
             </geometry>
+            <material name="black"/>
         </visual>
         <collision>
             <!-- <origin rpy="0 0 -${pi/2}" xyz="0 0 0"/> -->
@@ -246,6 +254,10 @@
             <geometry>
                 <mesh filename="package://wheebot_description/meshes/imu_link.STL"/>
             </geometry>
+            <material name="">
+                <color rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+            </material>
+            <material name="blue"/>
         </visual>
         <collision>
             <origin xyz="0 0 0" rpy="0 0 0"/>
@@ -261,5 +273,57 @@
         <child link="imu_link"/>
         <axis xyz="0 0 0"/>
     </joint>
+
+    <link name="laser_link">
+        <inertial> 
+            <origin xyz="-0.011945780406062 -0.000381929217680526 -0.0170649378129477" rpy="0 0 0" />
+            <mass value="0.073084435549317" />
+            <inertia ixx="1.96074931730795E-05" ixy="-3.62091076640009E-07" ixz="4.28230084046735E-07"
+                     iyy="2.40983835136327E-05" iyz="1.50180909250652E-08"
+                     izz="4.14184164228595E-05" />
+        </inertial>
+        <visual>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+                <mesh filename="package://wheebot_description/meshes/laser_link.STL"/>
+            </geometry>
+            <material name="dark_grey"/>
+        </visual>
+        <collision>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+                <mesh filename="package://wheebot_description/meshes/laser_link.STL"/>
+            </geometry>
+        </collision>
+    </link>
+
+    <joint name="laser_joint" type="fixed">
+        <origin rpy="0 0 3.14" xyz="0 0 0.7"/>
+        <parent link="base_link"/>
+        <child link="laser_link"/>
+        <axis xyz="0 0 0" />
+    </joint>
+
+
+    <material name="blue">
+        <color rgba="0 0 1 1"/>
+    </material>
+    <material name="black">
+        <color rgba="0 0 0 1"/>
+    </material>
+    <material name="silver">
+        <color rgba="0.79 0.82 0.93 1"/>
+    </material>
+    <material name="dark_grey">
+        <color rgba="0.3 0.3 0.3 1"/>
+    </material>
+
+
+    <xacro:arg name="use_nominal_extrinsics" default="false" />
+    <xacro:include filename="$(find realsense2_description)/urdf/_d435i.urdf.xacro"/>
+
+    <xacro:sensor_d435i parent="base_link" use_nominal_extrinsics="$(arg use_nominal_extrinsics)">
+        <origin xyz="0 0 0.63" rpy="0 0 0"/>
+    </xacro:sensor_d435i>
 
 </robot>

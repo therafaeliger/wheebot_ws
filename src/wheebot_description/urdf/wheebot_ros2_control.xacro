@@ -4,17 +4,31 @@
 
     <ros2_control name="RobotSystem" type="system">
 
-        <xacro:if value="$(arg is_ignition)">
-            <hardware>
-                <plugin>ign_ros2_control/IgnitionSystem</plugin>
-            </hardware>
+        <xacro:if value="$(arg is_sim)">
+            
+            <xacro:if value="$(arg is_ignition)">
+                <hardware>
+                    <plugin>ign_ros2_control/IgnitionSystem</plugin>
+                </hardware>
+            </xacro:if>
+    
+            <xacro:unless value="$(arg is_ignition)">
+                <hardware>
+                    <plugin>gz_ros2_control/GazeboSimSystem</plugin>
+                </hardware>
+            </xacro:unless>
+
         </xacro:if>
 
-        <xacro:unless value="$(arg is_ignition)">
+        <xacro:unless value="$(arg is_sim)">
+
             <hardware>
-                <plugin>gz_ros2_control/GazeboSimSystem</plugin>
+                <plugin>wheebot_firmware/WheebotInterface</plugin>
+                <param name="port">/dev/ttyUSB0</param>
             </hardware>
+
         </xacro:unless>
+
 
         <joint name="wheel_right_joint">
             <command_interface name="velocity">
