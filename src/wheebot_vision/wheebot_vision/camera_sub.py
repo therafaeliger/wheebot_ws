@@ -14,7 +14,7 @@ class CameraSubscriber(Node):
         self.bridge = CvBridge()
         
         # Create a subscriber for the video_topic
-        self.subscription = self.create_subscription(Image, '/camera/camera/color/image_raw', self.callbackFunction, 10)
+        self.subscription = self.create_subscription(Image, '/camera/image_raw', self.callbackFunction, 10)
         
         # Create an OpenCV window
         cv2.namedWindow("Camera", cv2.WINDOW_NORMAL)
