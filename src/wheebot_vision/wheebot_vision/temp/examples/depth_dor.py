@@ -128,7 +128,7 @@ class DepthDynamicRemovalNode(Node):
         # Subscriptions (manual sync)
         self.rgb_topic = '/camera/camera/color/image_raw'
         self.depth_topic = '/camera/camera/aligned_depth_to_color/image_raw'
-        self.det_topic = '/yolo/classified_detections'
+        self.det_topic = '/yolo/detections'
 
         self.create_subscription(Image, self.rgb_topic, self.rgb_cb, 10)
         self.create_subscription(Image, self.depth_topic, self.depth_cb, 10)

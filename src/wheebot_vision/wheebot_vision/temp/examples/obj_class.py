@@ -96,7 +96,7 @@ class DynamicStaticClassifier(Node):
         self.bridge = CvBridge()
 
         # Parameters (tuneable)
-        self.declare_parameter('vel_px_threshold', 2.0)      # px/frame
+        self.declare_parameter('vel_px_threshold', 2.0)
         self.declare_parameter('ma_window', 5)
         self.declare_parameter('iou_match_thresh', 0.3)
         self.declare_parameter('confirm_dynamic_frames', 3)
@@ -105,7 +105,6 @@ class DynamicStaticClassifier(Node):
         self.declare_parameter('visualize', True)
         self.declare_parameter('publish_viz', True)
         self.declare_parameter('max_track_age', 5)
-        # allow user to set dynamic classes via ros2 param
         self.declare_parameter('dynamic_class_names', ['person','bicycle','car','motorcycle','dog','cat'])
         self.declare_parameter('static_class_names', ['chair','table','sofa','bed','bench'])
 

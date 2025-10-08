@@ -26,13 +26,21 @@ setup(
         'console_scripts': [
             'camera_sub = wheebot_vision.camera_sub:main',
             'camera_pub = wheebot_vision.camera_pub:main',
-            'yolo_node = wheebot_vision.yolo_node:main',
-            'obj_det = wheebot_vision.obj_det:main',
-            'obj_seg = wheebot_vision.obj_seg:main',
-            'obj_class = wheebot_vision.obj_class:main',
-            'dor = wheebot_vision.dor:main',
-            'inpainting = wheebot_vision.inpainting:main',
-            'depth_dor = wheebot_vision.depth_dor:main',
+            'object_detection = wheebot_vision.object_detection:main',
+            'object_classification = wheebot_vision.object_classification:main',
+            'dynamic_object_removal = wheebot_vision.dynamic_object_removal:main',
+            'depth_republisher = wheebot_vision.depth_republisher:main',
+
+            'dynamic_object_removal_full_system = wheebot_vision.dynamic_object_removal_full_system:main',
+            'dynamic_object_removal_sync = wheebot_vision.dynamic_object_removal_sync:main',
+
+            # 'depth_dor = wheebot_vision.depth_dor:main',
+            # 'dor = wheebot_vision.dor:main',
+            # 'inpainting = wheebot_vision.inpainting:main',
+            # 'obj_class = wheebot_vision.obj_class:main',
+            # 'obj_det = wheebot_vision.obj_det:main',
+            # 'obj_seg = wheebot_vision.obj_seg:main',
+            # 'yolo_node = wheebot_vision.yolo_node:main',
         ],
     },
 )
