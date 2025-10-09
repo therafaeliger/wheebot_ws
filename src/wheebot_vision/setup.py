@@ -26,6 +26,7 @@ setup(
         'console_scripts': [
             'camera_sub = wheebot_vision.camera_sub:main',
             'camera_pub = wheebot_vision.camera_pub:main',
+            
             'object_detection = wheebot_vision.object_detection:main',
             'object_classification = wheebot_vision.object_classification:main',
             'dynamic_object_removal = wheebot_vision.dynamic_object_removal:main',

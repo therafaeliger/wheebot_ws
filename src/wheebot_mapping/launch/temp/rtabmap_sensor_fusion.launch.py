@@ -39,16 +39,16 @@ def generate_launch_description():
                 'publish_tf': True,
                 'database_path': LaunchConfiguration('database_path'),
 
-                'approx_sync': True,
-                'topic_queue_size': 100,
-                'sync_queue_size': 100,
-                'approx_sync_max_interval': 1.0,
+                # 'approx_sync': True,
+                # 'topic_queue_size': 30,
+                # 'sync_queue_size': 30,
+                
             }],
             remappings=[
-                ('rgb/image', '/dor/static_rgb'),
-                ('depth/image', '/dor/static_depth'),
-                ('rgb/camera_info', '/camera/camera/color/camera_info'),
-                ('scan', '/scan_for_slam'),
+                ('rgb/image', '/camera/color/image_raw'),
+                ('depth/image', '/camera/aligned_depth_to_color/image_raw'),
+                ('rgb/camera_info', '/camera/color/camera_info'),
+                ('scan', '/scan'),
                 ('odom', '/odom'),
                 ('imu', '/imu/data')
             ]
@@ -68,13 +68,13 @@ def generate_launch_description():
                 'publish_tf': True,
                 'wait_for_transform': 0.2,
 
-                'approx_sync': True,
-                'topic_queue_size': 100,
-                'sync_queue_size': 100,
-                'approx_sync_max_interval': 1.0,
+                # 'approx_sync': True,
+                # 'topic_queue_size': 30,
+                # 'sync_queue_size': 30,
+                
             }],
             remappings=[
-                ('scan', '/scan_for_slam'),
+                ('scan', '/scan'),
                 ('odom', '/odom'),
                 ('imu', '/imu/data')
             ]
@@ -98,16 +98,16 @@ def generate_launch_description():
                 'odom_frame_id': 'odom',
                 'map_frame_id': 'map',
                 
-                'approx_sync': True,
-                'topic_queue_size': 100,
-                'sync_queue_size': 100,
-                'approx_sync_max_interval': 1.0,
+                # 'approx_sync': True,
+                # 'topic_queue_size': 30,
+                # 'sync_queue_size': 30,
+                
             }],
             remappings=[
-                ('rgb/image', '/dor/static_rgb'),
-                ('depth/image', '/dor/static_depth'),
-                ('rgb/camera_info', '/camera/camera/color/camera_info'),
-                ('scan', '/scan_for_slam'),
+                ('rgb/image', '/camera/color/image_raw'),
+                ('depth/image', '/camera/aligned_depth_to_color/image_raw'),
+                ('rgb/camera_info', '/camera/color/camera_info'),
+                ('scan', '/scan'),
                 ('odom', '/odom'),
                 ('imu', '/imu/data')
             ]
@@ -150,18 +150,18 @@ def generate_launch_description():
         SetParameter(name='depth_module.emitter_enabled', value=1),
 
         # Launch camera driver
-        # IncludeLaunchDescription(
-        #     PythonLaunchDescriptionSource([os.path.join(
-        #         get_package_share_directory('realsense2_camera'), 'launch'),
-        #         '/rs_launch.py']),
-        #         launch_arguments={'camera_namespace': '',
-        #                           'enable_gyro': 'true',
-        #                           'enable_accel': 'true',
-        #                           'unite_imu_method': LaunchConfiguration('unite_imu_method'),
-        #                           'align_depth.enable': 'true',
-        #                           'enable_sync': 'true',
-        #                           'rgb_camera.profile': '640x360x30'}.items(),
-        # ),
+        IncludeLaunchDescription(
+            PythonLaunchDescriptionSource([os.path.join(
+                get_package_share_directory('realsense2_camera'), 'launch'),
+                '/rs_launch.py']),
+                launch_arguments={'camera_namespace': '',
+                                  'enable_gyro': 'true',
+                                  'enable_accel': 'true',
+                                  'unite_imu_method': LaunchConfiguration('unite_imu_method'),
+                                  'align_depth.enable': 'true',
+                                  'enable_sync': 'true',
+                                  'rgb_camera.profile': '640x360x30'}.items(),
+        ),
 
         # IncludeLaunchDescription(
         #     PythonLaunchDescriptionSource([os.path.join(
