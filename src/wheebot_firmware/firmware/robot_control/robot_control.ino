@@ -1,172 +1,117 @@
-// Motor Driver Connection PINs
-#define ENA_RIGHT 5   // PWM
-#define IN1_RIGHT 10  // Dir Motor A
-#define IN2_RIGHT 9   // Dir Motor A
-#define ENA_LEFT 6    // PWM
-#define IN3_LEFT 8    // Dir Motor B
-#define IN4_LEFT 7    // Dir Motor B
+#include <Wire.h>
+#include <Adafruit_MCP4725.h>
 
-// Millis Definition
-unsigned long last_millis = 0;
-const unsigned long interval = 100;
+Adafruit_MCP4725 dacAxisX;
+Adafruit_MCP4725 dacAxisY;
 
-// Interpret Serial Messages
-bool is_right_wheel_cmd = false;
-bool is_left_wheel_cmd = false;
-bool is_right_wheel_forward = true;
-bool is_left_wheel_forward = true;
-char value[] = "000";
-uint8_t value_idx = 0;
-bool is_cmd_complete = false;
+#define ADDR_AXIS_X 0x60
+#define ADDR_AXIS_Y 0x61
+#define IN_AXIS_X A2
+#define IN_AXIS_Y A0
 
-// Command
-int right_wheel_cmd = 0; // 0-255
-int left_wheel_cmd = 0;  // 0-255
+int inAxisXVal = 0, inAxisYVal = 0;
+int serAxisXVal = 0, serAxisYVal = 0;
+int inAxisXVal_TEMP = 0, inAxisYVal_TEMP = 0;
+int dacAxisXVal = 0, dacAxisYVal = 0;
+bool emergency_activated = 0;
 
+void setup()
+{
+  Wire.begin();
+  dacAxisX.begin(ADDR_AXIS_X);
+  dacAxisY.begin(ADDR_AXIS_Y);
 
-void setup() {
-  // Init Motor Driver Connection PINs
-  pinMode(ENA_RIGHT, OUTPUT);
-  pinMode(ENA_LEFT, OUTPUT);
-  pinMode(IN1_RIGHT, OUTPUT);
-  pinMode(IN2_RIGHT, OUTPUT);
-  pinMode(IN3_LEFT, OUTPUT);
-  pinMode(IN4_LEFT, OUTPUT);
-
-  // Set Motor Rotation Direction
-  digitalWrite(IN1_RIGHT, HIGH);
-  digitalWrite(IN2_RIGHT, LOW);
-  digitalWrite(IN3_LEFT, HIGH);
-  digitalWrite(IN4_LEFT, LOW);
-
+  pinMode(IN_AXIS_X, INPUT);
+  pinMode(IN_AXIS_Y, INPUT);
   pinMode(LED_BUILTIN, OUTPUT);
+
   Serial.begin(115200);
+  Serial.println("Robot System Ready!");
+  Serial.println("Waiting for command ...");
 }
 
-void loop() {
-  // Read and Interpret Wheel Velocity Commands
+void loop()
+{
+  // untuk kondisi
+  inAxisXVal_TEMP = inAxisXVal;
+  inAxisYVal_TEMP = inAxisYVal;
+
+  // ambil input joystick
+  inAxisXVal  = map(analogRead(IN_AXIS_X), 0, 1023, 255, -255);
+  inAxisYVal = map(analogRead(IN_AXIS_Y), 0, 1023, -255, 255);
+  // safety
+  if(inAxisXVal >= -20 && inAxisXVal <= 20) inAxisXVal = 0;
+  if(inAxisYVal >= -20 && inAxisYVal <= 20) inAxisYVal = 0;
+
+  // Serial.print(inAxisXVal);
+  // Serial.print(" | ");
+  // Serial.println(inAxisYVal);
+
+  // ambil input serial
   if (Serial.available())
   {
-    char chr = Serial.read();
-    // Right Wheel Motor
-    if(chr == 'r')
-    {
-      is_right_wheel_cmd = true;
-      is_left_wheel_cmd = false;
-      value_idx = 0;
-      is_cmd_complete = false;
+    String input = Serial.readStringUntil('\n');
+    input.trim();
+
+    int values[2] = {0, 0};
+    int i = 0;
+    char *token = strtok((char*)input.c_str(), ",");
+    while (token != NULL && i < 2) {
+      values[i++] = constrain(atoi(token), -255, 255);
+      token = strtok(NULL, ",");
     }
-    // Left Wheel Motor
-    else if(chr == 'l')
-    {
-      is_right_wheel_cmd = false;
-      is_left_wheel_cmd = true;
-      value_idx = 0;
+
+    if (i == 2) {
+      serAxisXVal = values[0];
+      serAxisYVal = values[1];
     }
-    // Positive direction
-    else if(chr == 'p')
-    {
-      if(is_right_wheel_cmd && !is_right_wheel_forward)
-      {
-        // change the direction of the rotation
-        digitalWrite(IN1_RIGHT, HIGH - digitalRead(IN1_RIGHT));
-        digitalWrite(IN2_RIGHT, HIGH - digitalRead(IN2_RIGHT));
-        is_right_wheel_forward = true;
-      }
-      else if(is_left_wheel_cmd && !is_left_wheel_forward)
-      {
-        // change the direction of the rotation
-        digitalWrite(IN3_LEFT, HIGH - digitalRead(IN3_LEFT));
-        digitalWrite(IN4_LEFT, HIGH - digitalRead(IN4_LEFT));
-        is_left_wheel_forward = true;
-      }
-    }
-    // Negative direction
-    else if(chr == 'n')
-    {
-      if(is_right_wheel_cmd && is_right_wheel_forward)
-      {
-        // change the direction of the rotation
-        digitalWrite(IN1_RIGHT, HIGH - digitalRead(IN1_RIGHT));
-        digitalWrite(IN2_RIGHT, HIGH - digitalRead(IN2_RIGHT));
-        is_right_wheel_forward = false;
-      }
-      else if(is_left_wheel_cmd && is_left_wheel_forward)
-      {
-        // change the direction of the rotation
-        digitalWrite(IN3_LEFT, HIGH - digitalRead(IN3_LEFT));
-        digitalWrite(IN4_LEFT, HIGH - digitalRead(IN4_LEFT));
-        is_left_wheel_forward = false;
-      }
-    }
-    // Separator
-    else if(chr == ',')
-    {
-      if(is_right_wheel_cmd)
-      {
-        right_wheel_cmd = atoi(value);
-      }
-      else if(is_left_wheel_cmd)
-      {
-        left_wheel_cmd = atoi(value);
-        is_cmd_complete = true;
-      }
-      // Reset for next command
-      value_idx = 0;
-      value[0] = '0';
-      value[1] = '0';
-      value[2] = '0';
-      value[3] = '\0';
-    }
-    // Command Value
     else
     {
-      if(value_idx < 5)
-      {
-        value[value_idx] = chr;
-        value_idx++;
-      }
+      Serial.println("Invalid input!");
     }
+
+    // Serial.print(serAxisXVal);
+    // Serial.print(" | ");
+    // Serial.println(serAxisYVal);
   }
 
-  // Encoder
-  unsigned long current_millis = millis();
-  if(current_millis - last_millis >= interval)
+  // PRIORITAS 1
+  if(inAxisXVal != 0 || inAxisYVal !=0)
   {
-    // Serial.print("Input\t: ");
-    // Serial.print(right_wheel_cmd);
-    // Serial.print(" | ");
-    // Serial.println(left_wheel_cmd);
-
-    if(right_wheel_cmd > 255)
-    {
-      right_wheel_cmd = 255;
-    }
-    else if(right_wheel_cmd < 0)
-    {
-      right_wheel_cmd = 0;
-    }
-    if(left_wheel_cmd > 255)
-    {
-      left_wheel_cmd = 255;
-    }
-    else if(left_wheel_cmd < 0)
-    {
-      left_wheel_cmd = 0;
-    }
-
-    // Serial.print("Output\t: ");
-    // Serial.print(right_wheel_cmd);
-    // Serial.print(" | ");
-    // Serial.println(left_wheel_cmd);
-
-    if(right_wheel_cmd !=0) digitalWrite(LED_BUILTIN, HIGH);
-    else if(left_wheel_cmd !=0) digitalWrite(LED_BUILTIN, HIGH);
-    else digitalWrite(LED_BUILTIN, 0);
-
-    analogWrite(ENA_RIGHT, right_wheel_cmd);
-    analogWrite(ENA_LEFT, left_wheel_cmd);
-   
-    last_millis = current_millis;
+    dacAxisXVal = map(inAxisXVal, -255, 255, 0, 4095);
+    dacAxisYVal = map(inAxisYVal, -255, 255, 0, 4095);
   }
+  else if((inAxisXVal == 0 || inAxisYVal == 0) && inAxisXVal_TEMP < 0)
+  {
+    emergency_activated = 1;
+    // Serial.println("ON");
+    digitalWrite(LED_BUILTIN, HIGH);
+
+    dacAxisXVal = map(inAxisXVal, -255, 255, 0, 4095);
+    dacAxisYVal = map(inAxisYVal, -255, 255, 0, 4095);
+  }
+  else if((inAxisXVal == 0 || inAxisYVal == 0) && inAxisXVal_TEMP > 0)
+  {
+    emergency_activated = 0;
+    // Serial.println("OFF");
+    digitalWrite(LED_BUILTIN, LOW);
+
+    dacAxisXVal = map(inAxisXVal, -255, 255, 0, 4095);
+    dacAxisYVal = map(inAxisYVal, -255, 255, 0, 4095);
+  }
+  else if(emergency_activated)
+  {
+    dacAxisXVal = map(0, -255, 255, 0, 4095);
+    dacAxisYVal = map(0, -255, 255, 0, 4095);
+  }
+  else
+  {
+    dacAxisXVal = map(serAxisXVal, -255, 255, 0, 4095);
+    dacAxisYVal = map(serAxisYVal, -255, 255, 0, 4095);
+  }
+
+  dacAxisX.setVoltage(dacAxisXVal, false);
+  dacAxisY.setVoltage(dacAxisYVal, false);
+
+  delay(10);
 }

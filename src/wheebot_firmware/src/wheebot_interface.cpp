@@ -56,7 +56,6 @@ std::vector<hardware_interface::StateInterface> WheebotInterface::export_state_i
 {
     std::vector<hardware_interface::StateInterface> state_interfaces;
 
-    // Provide only a position Interafce
     for (size_t i = 0; i < info_.joints.size(); i++)
     {
         state_interfaces.emplace_back(hardware_interface::StateInterface(
@@ -73,7 +72,6 @@ std::vector<hardware_interface::CommandInterface> WheebotInterface::export_comma
 {
     std::vector<hardware_interface::CommandInterface> command_interfaces;
 
-    // Provide only a velocity Interafce
     for (size_t i = 0; i < info_.joints.size(); i++)
     {
         command_interfaces.emplace_back(hardware_interface::CommandInterface(
@@ -132,68 +130,59 @@ CallbackReturn WheebotInterface::on_deactivate(const rclcpp_lifecycle::State &)
 
 hardware_interface::return_type WheebotInterface::read(const rclcpp::Time &, const rclcpp::Duration &)
 {
-    // Interpret the string
-    if(arduino_.IsDataAvailable())
+  // Interpret the string
+  if(arduino_.IsDataAvailable())
+  {
+    auto dt = (rclcpp::Clock().now() - last_run_).seconds();
+    std::string message;
+    arduino_.ReadLine(message);
+    std::stringstream ss(message);
+    std::string res;
+    int multiplier = 1;
+    while(std::getline(ss, res, ','))
     {
-        auto dt = (rclcpp::Clock().now() - last_run_).seconds();
-        std::string message;
-        arduino_.ReadLine(message);
-        std::stringstream ss(message);
-        std::string res;
-        int multiplier = 1;
-        while(std::getline(ss, res, ','))
-        {
-            multiplier = res.at(1) == 'p' ? 1 : -1;
+      multiplier = res.at(1) == 'p' ? 1 : -1;
 
-            if(res.at(0) == 'r')
-            {
-                velocity_states_.at(0) = multiplier * std::stod(res.substr(2, res.size()));
-                position_states_.at(0) += velocity_states_.at(0) * dt;
-            }
-            else if(res.at(0) == 'l')
-            {
-                velocity_states_.at(1) = multiplier * std::stod(res.substr(2, res.size()));
-                position_states_.at(1) += velocity_states_.at(1) * dt;
-            }
-        }
-        last_run_ = rclcpp::Clock().now();
+      if(res.at(0) == 'r')
+      {
+        velocity_states_.at(0) = multiplier * std::stod(res.substr(2, res.size()));
+        position_states_.at(0) += velocity_states_.at(0) * dt;
+      }
+      else if(res.at(0) == 'l')
+      {
+        velocity_states_.at(1) = multiplier * std::stod(res.substr(2, res.size()));
+        position_states_.at(1) += velocity_states_.at(1) * dt;
+      }
     }
-    return hardware_interface::return_type::OK;
+    last_run_ = rclcpp::Clock().now();
+  }
+  return hardware_interface::return_type::OK;
 }
 
 
 hardware_interface::return_type WheebotInterface::write(const rclcpp::Time &, const rclcpp::Duration &)
 {
-    // Implement communication protocol with the Arduino
     std::stringstream message_stream;
-    char right_wheel_sign = velocity_commands_.at(0) >= 0 ? 'p' : 'n';
-    char left_wheel_sign = velocity_commands_.at(1) >= 0 ? 'p' : 'n';
-    std::string compensate_zeros_right = "";
-    std::string compensate_zeros_left = "";
-    if(std::abs(velocity_commands_.at(0)) < 10.0)
-    {
-        compensate_zeros_right = "0";
-    }
-    else
-    {
-        compensate_zeros_right = "";
-    }
-    if(std::abs(velocity_commands_.at(1)) < 10.0)
-    {
-        compensate_zeros_left = "0";
-    }
-    else
-    {
-        compensate_zeros_left = "";
-    }
 
-    message_stream << std::fixed << std::setprecision(2) << 
-    "r" << right_wheel_sign << compensate_zeros_right << std::abs(velocity_commands_.at(0)) << 
-    ",l" <<  left_wheel_sign << compensate_zeros_left << std::abs(velocity_commands_.at(1)) << ",";
+    int right_vel = velocity_commands_.at(0) * 255;
+    int left_vel = velocity_commands_.at(1) * 255;
+
+    int inAxisXVal = (right_vel + left_vel)/2;
+    int inAxisYVal = (left_vel - right_vel)/2;
+
+    // safety
+    if(inAxisXVal > 255) inAxisXVal = 255;
+    if(inAxisXVal < -255) inAxisXVal = -255;
+    if(inAxisYVal > 255) inAxisYVal = 255;
+    if(inAxisYVal < -255) inAxisYVal = -255;
+
+    message_stream << inAxisXVal << "," << inAxisYVal << ",\n";
 
     try
     {
         arduino_.Write(message_stream.str());
+        RCLCPP_INFO_STREAM(rclcpp::get_logger("WheebotInterface"), "Sent message " << message_stream.str() << " to the port " << port_);
+        // RCLCPP_INFO_STREAM(rclcpp::get_logger("WheebotInterface"), "Sent message " << velocity_commands_.at(0) << " | " << velocity_commands_.at(1) << " to the port " << port_);
     }
     catch (...)
     {
