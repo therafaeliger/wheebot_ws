@@ -9,7 +9,7 @@ controller_server:
     progress_checker_plugin: "progress_checker"
     goal_checker_plugins: ["general_goal_checker"]
     controller_plugins: ["FollowPath"]
-    odom_topic: /wheebot_controller/odom
+    odom_topic: /odom
 
     # Progress checker parameters
     progress_checker:
@@ -22,22 +22,6 @@ controller_server:
       xy_goal_tolerance: 0.25
       yaw_goal_tolerance: 0.25
       stateful: True
-    
-    # PD Motion Planner parameters
-    # FollowPath:
-    #   plugin: "wheebot_motion::PDMotionPlanner"
-    #   kp: 2.0
-    #   kd: 0.1
-    #   max_linear_velocity: 0.3
-    #   max_angular_velocity: 1.0
-    #   step_size: 0.1
-
-    # Pure Pursuit parameters
-    # PurePursuit:
-    #   plugin: "wheebot_motion::PurePursuit"
-    #   look_ahead_distance: 0.5
-    #   max_linear_velocity: 0.3
-    #   max_angular_velocity: 1.0
     
     # RPP parameters
     FollowPath:

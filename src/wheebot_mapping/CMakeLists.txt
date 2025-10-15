@@ -15,31 +15,15 @@ find_package(geometry_msgs REQUIRED)
 find_package(tf2_ros REQUIRED)
 find_package(tf2 REQUIRED)
 
-include_directories(include)
-
-add_executable(mapping_with_known_poses src/mapping_with_known_poses.cpp)
-ament_target_dependencies(mapping_with_known_poses rclcpp sensor_msgs tf2_ros nav_msgs geometry_msgs tf2)
-
 ament_python_install_package(${PROJECT_NAME})
 
 install(
-  DIRECTORY include
-  DESTINATION include
-)
-
-install(TARGETS
-  mapping_with_known_poses
-  DESTINATION lib/${PROJECT_NAME}
-)
-
-install(
-  DIRECTORY config launch rviz maps
+  DIRECTORY launch rviz maps
   DESTINATION share/${PROJECT_NAME}
 )
 
 install(PROGRAMS
   ${PROJECT_NAME}/lidar_range.py
-  ${PROJECT_NAME}/mapping_with_known_poses.py
   DESTINATION lib/${PROJECT_NAME}
 )
 

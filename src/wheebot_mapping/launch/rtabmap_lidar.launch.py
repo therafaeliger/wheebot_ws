@@ -16,6 +16,7 @@ from launch.substitutions import LaunchConfiguration
 
 def generate_launch_description():
     parameters=[{
+          'use_sim_time': True,
           'frame_id':'base_link',
           'subscribe_scan': True,
           'subscribe_scan_cloud': False,
@@ -26,24 +27,24 @@ def generate_launch_description():
           'wait_imu_to_init':True}]
 
     remappings=[
-          ('imu', '/imu/data'),
+          ('imu', '/imu/out'),
           ('scan', '/scan')]
 
     return LaunchDescription([
 
-        Node(
-            package='rplidar_ros',
-            executable='rplidar_composition',
-            name='rplidar_a1',
-            output='screen',
-            parameters=[{
-                'serial_port': '/dev/ttyUSB0',
-                'serial_baudrate': 115200,
-                'frame_id': 'laser_frame',
-                'inverted': False,
-                'angle_compensate': True
-            }]
-        ),
+        # Node(
+        #     package='rplidar_ros',
+        #     executable='rplidar_composition',
+        #     name='rplidar_a1',
+        #     output='screen',
+        #     parameters=[{
+        #         'serial_port': '/dev/ttyUSB0',
+        #         'serial_baudrate': 115200,
+        #         'frame_id': 'laser_frame',
+        #         'inverted': False,
+        #         'angle_compensate': True
+        #     }]
+        # ),
 
         Node(
             package='rtabmap_odom', executable='icp_odometry', output='screen',
@@ -65,6 +66,6 @@ def generate_launch_description():
             package='tf2_ros',
             executable='static_transform_publisher',
             output='screen',
-            arguments=['0', '0', '0.7', '3.14159265', '0', '0', 'base_link', 'laser_frame']
+            arguments=['0', '0', '0.7', '3.14159265', '0', '0', 'base_link', 'laser_link']
         ),
     ])

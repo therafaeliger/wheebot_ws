@@ -298,7 +298,12 @@
     </link>
 
     <joint name="laser_joint" type="fixed">
-        <origin rpy="0 0 3.14" xyz="0 0 0.7"/>
+        <!-- atas -->
+        <!-- <origin rpy="0 0 0" xyz="0 0 0.7"/> -->
+
+        <!-- armrest -->
+        <origin rpy="0 0 0" xyz="0.3036 0.2157 0.4"/>
+        
         <parent link="base_link"/>
         <child link="laser_link"/>
         <axis xyz="0 0 0" />
@@ -323,7 +328,20 @@
     <xacro:include filename="$(find realsense2_description)/urdf/_d435i.urdf.xacro"/>
 
     <xacro:sensor_d435i parent="base_link" use_nominal_extrinsics="$(arg use_nominal_extrinsics)">
-        <origin xyz="0 0 0.63" rpy="0 0 0"/>
+        <!-- atas -->
+        <!-- <origin xyz="0.058 0 0.638" rpy="0 0 0"/> -->
+         
+        <!-- armrest -->
+        <origin xyz="0.3616 0.2157 0.338" rpy="0 0 0"/>
     </xacro:sensor_d435i>
+
+    <link name="camera_optical_frame"/>
+
+    <joint name="camera_optical_joint" type="fixed">
+    <parent link="camera_link"/>
+    <child link="camera_optical_frame"/>
+    <origin xyz="0 0 0" rpy="-1.5708 0 -1.5708"/>
+    </joint>
+
 
 </robot>
