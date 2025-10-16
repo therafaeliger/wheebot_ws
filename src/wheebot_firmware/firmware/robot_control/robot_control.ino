@@ -6,8 +6,8 @@ Adafruit_MCP4725 dacAxisY;
 
 #define ADDR_AXIS_X 0x60
 #define ADDR_AXIS_Y 0x61
-#define IN_AXIS_X A2
-#define IN_AXIS_Y A0
+#define IN_AXIS_X A0
+#define IN_AXIS_Y A2
 
 int inAxisXVal = 0, inAxisYVal = 0;
 int serAxisXVal = 0, serAxisYVal = 0;
@@ -37,7 +37,7 @@ void loop()
   inAxisYVal_TEMP = inAxisYVal;
 
   // ambil input joystick
-  inAxisXVal  = map(analogRead(IN_AXIS_X), 0, 1023, 255, -255);
+  inAxisXVal  = map(analogRead(IN_AXIS_X), 0, 1023, -255, 255);
   inAxisYVal = map(analogRead(IN_AXIS_Y), 0, 1023, -255, 255);
   // safety
   if(inAxisXVal >= -20 && inAxisXVal <= 20) inAxisXVal = 0;
@@ -81,7 +81,7 @@ void loop()
     dacAxisXVal = map(inAxisXVal, -255, 255, 0, 4095);
     dacAxisYVal = map(inAxisYVal, -255, 255, 0, 4095);
   }
-  else if((inAxisXVal == 0 || inAxisYVal == 0) && inAxisXVal_TEMP < 0)
+  else if((inAxisXVal == 0 || inAxisYVal == 0) && inAxisYVal_TEMP > 0)
   {
     emergency_activated = 1;
     // Serial.println("ON");
@@ -90,7 +90,7 @@ void loop()
     dacAxisXVal = map(inAxisXVal, -255, 255, 0, 4095);
     dacAxisYVal = map(inAxisYVal, -255, 255, 0, 4095);
   }
-  else if((inAxisXVal == 0 || inAxisYVal == 0) && inAxisXVal_TEMP > 0)
+  else if((inAxisXVal == 0 || inAxisYVal == 0) && inAxisYVal_TEMP < 0)
   {
     emergency_activated = 0;
     // Serial.println("OFF");

@@ -13,7 +13,7 @@ def generate_launch_description():
         name='rtabmap_vio',
         output='screen',
         parameters=[{
-            'use_sim_time': True,
+            'use_sim_time': False, # jangan lupa
             'wait_imu_to_init': True,
             'approx_sync': True,
             'publish_tf': True,
@@ -24,11 +24,18 @@ def generate_launch_description():
             'odom_frame_id': 'odom_vio',
         }],
         remappings=[
-            ('rgb/image', '/camera/image'),
-            ('depth/image', '/camera/depth_image'),
-            ('rgb/camera_info', '/camera/camera_info'),
             ('imu', '/imu/data'),
             ('odom', '/vio/odom'),
+
+            # # Simulation
+            # ('rgb/image', '/camera/image'),
+            # ('depth/image', '/camera/depth_image'),
+            # ('rgb/camera_info', '/camera/camera_info'),
+
+            # Real Hardware
+            ('rgb/image', '/camera/color/image_raw'),
+            ('depth/image', '/camera/aligned_depth_to_color/image_raw'),
+            ('rgb/camera_info', '/camera/color/camera_info'),
         ],
     )
 
@@ -38,7 +45,7 @@ def generate_launch_description():
         name='rtabmap_lio',
         output='screen',
         parameters=[{
-            'use_sim_time': True,
+            'use_sim_time': False, # jangan lupa
             'wait_imu_to_init': True,
             'approx_sync': True,
             'publish_tf': True,
@@ -49,7 +56,7 @@ def generate_launch_description():
             'odom_frame_id': 'odom_lio',
         }],
         remappings=[
-            ('scan', '/scan'),
+            ('scan', '/scan'), # if u use lidar_range.py change to /scan_for_slam
             ('imu', '/imu/data'),
             ('odom', '/lio/odom'),
         ],
@@ -66,8 +73,8 @@ def generate_launch_description():
             'publish_tf': False
         }],
         remappings=[
+            ('imu/data', '/imu/data'),
             ('imu/data_raw', '/camera/imu'),
-            ('imu/data', '/imu/data')
         ],
     )
 
@@ -85,16 +92,17 @@ def generate_launch_description():
         lio_node,
         ekf_node,
 
-        Node(
-            package='tf2_ros',
-            executable='static_transform_publisher',
-            output='screen',
-            arguments=['0.3616', '0.2157', '0.63', '0', '0', '0', 'base_link', 'camera_link']
-        ),
-        Node(
-            package='tf2_ros',
-            executable='static_transform_publisher',
-            output='screen',
-            arguments=['0.3036', '0.2157', '0.7', '0', '0', '0', 'base_link', 'laser_link']
-        ),
+        # # Static TF
+        # Node(
+        #     package='tf2_ros',
+        #     executable='static_transform_publisher',
+        #     output='screen',
+        #     arguments=['0.3616', '0.2157', '0.63', '0', '0', '0', 'base_link', 'camera_link']
+        # ),
+        # Node(
+        #     package='tf2_ros',
+        #     executable='static_transform_publisher',
+        #     output='screen',
+        #     arguments=['0.3036', '0.2157', '0.7', '0', '0', '0', 'base_link', 'laser_link']
+        # ),
     ])

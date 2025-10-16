@@ -167,14 +167,14 @@ hardware_interface::return_type WheebotInterface::write(const rclcpp::Time &, co
     int right_vel = velocity_commands_.at(0) * 255;
     int left_vel = velocity_commands_.at(1) * 255;
 
-    int inAxisXVal = (right_vel + left_vel)/2;
-    int inAxisYVal = (left_vel - right_vel)/2;
+    int inAxisXVal = (right_vel - left_vel)/2;
+    int inAxisYVal = -(left_vel + right_vel)/2;
 
     // safety
-    if(inAxisXVal > 255) inAxisXVal = 255;
-    if(inAxisXVal < -255) inAxisXVal = -255;
-    if(inAxisYVal > 255) inAxisYVal = 255;
-    if(inAxisYVal < -255) inAxisYVal = -255;
+    if(inAxisXVal > 200) inAxisXVal = 200;
+    if(inAxisXVal < -200) inAxisXVal = -200;
+    if(inAxisYVal > 200) inAxisYVal = 200;
+    if(inAxisYVal < -200) inAxisYVal = -200;
 
     message_stream << inAxisXVal << "," << inAxisYVal << ",\n";
 

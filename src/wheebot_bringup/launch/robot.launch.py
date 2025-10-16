@@ -8,13 +8,6 @@ from ament_index_python.packages import get_package_share_directory
 
 
 def generate_launch_description():
-    use_slam = LaunchConfiguration("use_slam")
-
-    use_slam_arg = DeclareLaunchArgument(
-        "use_slam",
-        default_value="true"
-    )
-
     hardware_interface = IncludeLaunchDescription(
         os.path.join(
             get_package_share_directory("wheebot_firmware"),
@@ -45,27 +38,28 @@ def generate_launch_description():
         }.items()
     )
 
-    # imu_driver_node = Node(
-    #     package="wheebot_firmware",
-    #     executable="mpu6050_driver.py"
-    # )
+    sensor_run = IncludeLaunchDescription(
+        os.path.join(
+            get_package_share_directory("wheebot_firmware"),
+            "launch",
+            "sensor.launch.py"
+        ),
+    )
 
     localization = IncludeLaunchDescription(
         os.path.join(
             get_package_share_directory("wheebot_localization"),
             "launch",
-            "global_localization.launch.py"
+            "rtabmap_fused_odom.launch.py"
         ),
-        condition=UnlessCondition(use_slam)
     )
 
     slam = IncludeLaunchDescription(
         os.path.join(
             get_package_share_directory("wheebot_mapping"),
             "launch",
-            "slam.launch.py"
+            "rtabmap_fused_slam.launch.py"
         ),
-        condition=IfCondition(use_slam)
     )
 
     navigation = IncludeLaunchDescription(
@@ -75,14 +69,19 @@ def generate_launch_description():
             "navigation.launch.py"
         ),
     )
+
+    # imu_driver_node = Node(
+    #     package="wheebot_firmware",
+    #     executable="mpu6050_driver.py"
+    # )
     
     return LaunchDescription([
-        use_slam_arg,
         hardware_interface,
         controller,
         joystick,
-        # imu_driver_node,
+        sensor_run,
         localization,
-        slam,
-        navigation
+        # slam,
+        # navigation
+        # imu_driver_node,
     ])
