@@ -25,7 +25,8 @@ WheebotInterface::~WheebotInterface()
     }
 }
 
-CallbackReturn WheebotInterface::on_init(const hardware_interface::HardwareComponentInterfaceParams &hardware_info)
+CallbackReturn WheebotInterface::on_init(const hardware_interface::HardwareInfo &hardware_info)
+// CallbackReturn WheebotInterface::on_init(const hardware_interface::HardwareComponentInterfaceParams &hardware_info)
 {
     CallbackReturn result = hardware_interface::SystemInterface::on_init(hardware_info);
     if (result != CallbackReturn::SUCCESS)

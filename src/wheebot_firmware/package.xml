@@ -17,7 +17,7 @@
   <depend>rclcpp_lifecycle</depend>
   <depend>pluginlib</depend>
   <depend>libserial-dev</depend>
-  <depend>pal_statistics</depend>
+  <!-- <depend>pal_statistics</depend> -->
 
   <exec_depend>python3-serial</exec_depend>
   <exec_depend>python3-smbus</exec_depend>
