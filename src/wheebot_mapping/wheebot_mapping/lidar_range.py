@@ -11,8 +11,8 @@ class LaserFilterNode(Node):
         self.sub = self.create_subscription(LaserScan, '/scan', self.cb, 10)
 
         # Konfigurasi yang lebih mudah - menggunakan derajat
-        self.declare_parameter('ignore_angle_deg', 180.0)  # Sudut yang diabaikan dalam derajat
-        self.declare_parameter('ignore_center_deg', 0.0)  # Pusat sudut yang diabaikan dalam derajat
+        self.declare_parameter('ignore_angle_deg', 70.0)  # Sudut yang diabaikan dalam derajat
+        self.declare_parameter('ignore_center_deg', 30.0)  # Pusat sudut yang diabaikan dalam derajat
         self.declare_parameter('min_range_ignore', 0.15)  # Jarak minimum yang diabaikan (meter)
         
         # Dapatkan parameter

@@ -46,6 +46,18 @@ def generate_launch_description():
         ),
     )
 
+    lidar_filter = Node(
+        package='wheebot_mapping',
+        executable='lidar_range.py',
+        name='lidar_range',
+        output='screen',
+        parameters=[{
+            'ignore_angle_deg': 70.0,
+            'ignore_center_deg': 30.0,
+            'min_range_ignore': 0.15,
+        }]
+    )
+
     localization = IncludeLaunchDescription(
         os.path.join(
             get_package_share_directory("wheebot_localization"),
@@ -79,9 +91,10 @@ def generate_launch_description():
         hardware_interface,
         controller,
         joystick,
-        sensor_run,
-        localization,
+        # sensor_run,
+        # lidar_filter,
+        # localization,
         # slam,
-        # navigation
+        # navigation,
         # imu_driver_node,
     ])

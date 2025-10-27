@@ -10,41 +10,41 @@ from launch.substitutions import LaunchConfiguration
 
 def generate_launch_description():
     parameters=[{
-        'use_sim_time': False,
-        'frame_id':'base_link',
-        'odom_frame_id': 'odom',
-        'map_frame_id': 'map',
+        "use_sim_time": False,
+        "subscribe_depth": True,
+        "subscribe_rgbd": False,
+        "subscribe_rgb": True,
+        "subscribe_stereo": False,
+        "subscribe_scan": False,
+        "subscribe_scan_cloud": False,
+        "subscribe_odom": True,
+        "frame_id": "base_link",
+        "map_frame_id": "map",
+        "odom_frame_id": "", # If set, TF is used to get odometry instead of the topic.
+        "publish_tf": True,
+        "use_action_for_goal": False,
+        "wait_for_transform": 0.5,
+        "approx_sync": True,
+        "topic_queue_size": 30,
+        "sync_queue_size": 30,
 
-        'subscribe_rgb':True,
-        'subscribe_depth':True,
-        # 'subscribe_odom':True,
-        # 'subscribe_odom_info':False,
-        'subscribe_imu':False,
-
-        'approx_sync':True,
-        'wait_imu_to_init':False,
-        'wait_for_transform':0.5,
-        'publish_tf':True,
-        'queue_size':30,
+        # # for saving and loading map, don't forget to delete arguments '--delete_db_on_start'
+        # "database_path": os.path.join(get_package_share_directory('wheebot_mapping'), 'rtabmap.db'),
+        # "database_path": "~/.ros/rtabmap.db",
     }]
 
     remappings=[
-        # ('imu', '/imu/data'),
-        ('odom', '/odometry/filtered'),
-
-        # # Simulation
-        # ('rgb/image', '/camera/image'),
-        # ('depth/image', '/camera/depth_image'),
-        # ('rgb/camera_info', '/camera/camera_info'),
-
-        # Real Hardware
-        ('rgb/image', '/camera/color/image_raw'),
-        ('depth/image', '/camera/aligned_depth_to_color/image_raw'),
+        ('map', '/map'),
+        ('rgb/image', '/dor/inpainted/image'),
+        ('depth/image', '/dor/dynamic_removed/depth'),
         ('rgb/camera_info', '/camera/color/camera_info'),
+        # ('scan', '/scan_for_slam'),
+        # ('scan_cloud_topic', '/dor/dynamic_removed/pointcloud'),
+        ('odom', '/odometry/filtered'),
+        ('imu', '/imu/data'),
     ]
 
     return LaunchDescription([
-
         Node(
             package='rtabmap_slam', executable='rtabmap', output='screen',
             parameters=parameters,

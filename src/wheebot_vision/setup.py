@@ -26,13 +26,10 @@ setup(
         'console_scripts': [
             'camera_sub = wheebot_vision.camera_sub:main',
             'camera_pub = wheebot_vision.camera_pub:main',
-            
-            'object_detection = wheebot_vision.object_detection:main',
-            'object_classification = wheebot_vision.object_classification:main',
-            'dynamic_object_removal = wheebot_vision.dynamic_object_removal:main',
-            'depth_republisher = wheebot_vision.depth_republisher:main',
-
             'full_system = wheebot_vision.full_system:main',
+            'object_detection_and_classification = wheebot_vision.object_detection_and_classification:main',
+            'dynamic_object_removal = wheebot_vision.dynamic_object_removal:main',
+            'pointcloud_republisher = wheebot_vision.pointcloud_republisher:main',
         ],
     },
 )

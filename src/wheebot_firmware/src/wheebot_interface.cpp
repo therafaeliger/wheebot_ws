@@ -170,7 +170,7 @@ hardware_interface::return_type WheebotInterface::write(const rclcpp::Time &, co
     int inAxisXVal = (right_vel - left_vel)/2;
     int inAxisYVal = -(left_vel + right_vel)/2;
 
-    // safety
+    // limitations
     if(inAxisXVal > 200) inAxisXVal = 200;
     if(inAxisXVal < -200) inAxisXVal = -200;
     if(inAxisYVal > 200) inAxisYVal = 200;

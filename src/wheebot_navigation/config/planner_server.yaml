@@ -1,7 +1,7 @@
 planner_server:
   ros__parameters:
     expected_planner_frequency: 1.0
-    use_sim_time: true
+    use_sim_time: false
     planner_plugins: ["GridBased"]
 
     # Smac 2D parameters
@@ -29,31 +29,78 @@ global_costmap:
       publish_frequency: 1.0
       global_frame: map
       robot_base_frame: base_link
-      use_sim_time: true
+      use_sim_time: false
       robot_radius: 0.1
       resolution: 0.05
       track_unknown_space: true
-      plugins: ["static_layer", "obstacle_layer", "inflation_layer"]
-      obstacle_layer:
-        plugin: "nav2_costmap_2d::ObstacleLayer"
-        enabled: True
-        observation_sources: scan
-        scan:
-          topic: /scan
-          max_obstacle_height: 2.0
-          clearing: True
-          marking: True
-          data_type: "LaserScan"
-          raytrace_max_range: 3.0
-          raytrace_min_range: 0.0
-          obstacle_max_range: 2.5
-          obstacle_min_range: 0.0
+
+      plugins: ["static_layer", "static_obstacle_layer", "dynamic_obstacle_layer", "inflation_layer"]
+
+      # ---------- Static Map Layer ----------
       static_layer:
         plugin: "nav2_costmap_2d::StaticLayer"
         map_topic: /map
         map_subscribe_transient_local: True
+        enabled: True
+        lethal_cost_threshold: 100
+        track_unknown_space: True
+        trinary_costmap: True
+
+      # obstacle_layer:
+      #   plugin: "nav2_costmap_2d::ObstacleLayer"
+      #   enabled: True
+      #   observation_sources: scan
+      #   scan:
+      #     topic: /scan
+      #     max_obstacle_height: 2.0
+      #     clearing: True
+      #     marking: True
+      #     data_type: "LaserScan"
+      #     raytrace_max_range: 3.0
+      #     raytrace_min_range: 0.0
+      #     obstacle_max_range: 2.5
+      #     obstacle_min_range: 0.0
+
+      # ---------- Static Obstacles ----------
+      static_obstacle_layer:
+        plugin: "nav2_costmap_2d::ObstacleLayer"
+        enabled: True
+        observation_sources: static_points
+        static_points:
+          topic: /dor/pointcloud/static_only
+          data_type: "PointCloud2"
+          marking: True
+          clearing: True
+          max_obstacle_height: 2.0
+          raytrace_max_range: 5.0
+          raytrace_min_range: 0.0
+          obstacle_max_range: 4.0
+          obstacle_min_range: 0.0
+          expected_update_rate: 5.0
+          observation_persistence: 0.5
+
+      # ---------- Dynamic Obstacles ----------
+      dynamic_obstacle_layer:
+        plugin: "nav2_costmap_2d::ObstacleLayer"
+        enabled: True
+        observation_sources: dynamic_points
+        dynamic_points:
+          topic: /dor/pointcloud/dynamic_only
+          data_type: "PointCloud2"
+          marking: True
+          clearing: True
+          max_obstacle_height: 2.0
+          raytrace_max_range: 4.0
+          raytrace_min_range: 0.0
+          obstacle_max_range: 3.0
+          obstacle_min_range: 0.0
+          expected_update_rate: 5.0
+          observation_persistence: 0.3
+
+      # ---------- Inflation Layer ----------
       inflation_layer:
         plugin: "nav2_costmap_2d::InflationLayer"
         cost_scaling_factor: 3.0
         inflation_radius: 0.55
+
       always_send_full_costmap: True

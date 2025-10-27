@@ -13,29 +13,27 @@ def generate_launch_description():
         name='rtabmap_vio',
         output='screen',
         parameters=[{
-            'use_sim_time': False, # jangan lupa
-            'wait_imu_to_init': True,
-            'approx_sync': True,
-            'publish_tf': True,
-            'frame_id': 'base_link',
-            'subscribe_rgb': True,
-            'subscribe_depth': True,
+            "use_sim_time": False,
+            "frame_id": "base_link",
+            "odom_frame_id": "odom_vio",
+            "publish_tf": True,
+            "wait_for_transform": 0.2,
+            "wait_imu_to_init": True,
+            "always_check_imu_tf": False,
+            "approx_sync": True,
+            "topic_queue_size": 30,
+            "sync_queue_size": 30,
+            "subscribe_rgbd": False,
+            "subscribe_rgb": True,
+            "subscribe_depth": True,
             'subscribe_imu': True,
-            'odom_frame_id': 'odom_vio',
         }],
         remappings=[
-            ('imu', '/imu/data'),
-            ('odom', '/vio/odom'),
-
-            # # Simulation
-            # ('rgb/image', '/camera/image'),
-            # ('depth/image', '/camera/depth_image'),
-            # ('rgb/camera_info', '/camera/camera_info'),
-
-            # Real Hardware
-            ('rgb/image', '/camera/color/image_raw'),
-            ('depth/image', '/camera/aligned_depth_to_color/image_raw'),
+            ('rgb/image', '/dor/dynamic_removed/image'),
+            ('depth/image', '/dor/dynamic_removed/depth'),
             ('rgb/camera_info', '/camera/color/camera_info'),
+            ('odom', '/odom/vio'),
+            ('imu', '/imu/data'),
         ],
     )
 
@@ -45,36 +43,25 @@ def generate_launch_description():
         name='rtabmap_lio',
         output='screen',
         parameters=[{
-            'use_sim_time': False, # jangan lupa
-            'wait_imu_to_init': True,
-            'approx_sync': True,
-            'publish_tf': True,
-            'frame_id': 'base_link',
-            'subscribe_scan': True,
-            'subscribe_scan_cloud': False,
+            "use_sim_time": False,
+            "frame_id": "base_link",
+            "odom_frame_id": "odom_lio",
+            "publish_tf": True,
+            "wait_for_transform": 0.2,
+            "wait_imu_to_init": True,
+            "always_check_imu_tf": False,
+            "approx_sync": True,
+            "topic_queue_size": 30,
+            "sync_queue_size": 30,
+            "subscribe_scan": True,
+            "subscribe_scan_cloud": False,
             'subscribe_imu': True,
-            'odom_frame_id': 'odom_lio',
         }],
         remappings=[
-            ('scan', '/scan'), # if u use lidar_range.py change to /scan_for_slam
+            ('scan', '/scan_for_slam'), # if u use lidar_range.py change to /scan_for_slam
+            # ('/scan_cloud', '/dor/dynamic_removed/pointcloud'),
+            ('odom', '/odom/lio'),
             ('imu', '/imu/data'),
-            ('odom', '/lio/odom'),
-        ],
-    )
-
-    imu_filter = Node(
-        package='imu_filter_madgwick',
-        executable='imu_filter_madgwick_node',
-        name='imu_filter',
-        output='screen',
-        parameters=[{
-            'use_mag': False,
-            'world_frame': 'enu',
-            'publish_tf': False
-        }],
-        remappings=[
-            ('imu/data', '/imu/data'),
-            ('imu/data_raw', '/camera/imu'),
         ],
     )
 
@@ -87,22 +74,7 @@ def generate_launch_description():
     )
 
     return LaunchDescription([
-        imu_filter,
         vio_node,
         lio_node,
         ekf_node,
-
-        # # Static TF
-        # Node(
-        #     package='tf2_ros',
-        #     executable='static_transform_publisher',
-        #     output='screen',
-        #     arguments=['0.3616', '0.2157', '0.63', '0', '0', '0', 'base_link', 'camera_link']
-        # ),
-        # Node(
-        #     package='tf2_ros',
-        #     executable='static_transform_publisher',
-        #     output='screen',
-        #     arguments=['0.3036', '0.2157', '0.7', '0', '0', '0', 'base_link', 'laser_link']
-        # ),
     ])

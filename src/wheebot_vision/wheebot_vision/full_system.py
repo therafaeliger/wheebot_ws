@@ -44,13 +44,13 @@ class DynamicObjectRemovalFullSystem(Node):
 
         # === ROS Subscriptions ===
         self.rgb_sub = self.create_subscription(
-            Image, '/camera/camera/color/image_raw', self.rgb_callback, 10
+            Image, '/camera/color/image_raw', self.rgb_callback, 10
         )
         self.depth_sub = self.create_subscription(
-            Image, '/camera/camera/aligned_depth_to_color/image_raw', self.depth_callback, 10
+            Image, '/camera/aligned_depth_to_color/image_raw', self.depth_callback, 10
         )
         self.camera_info_sub = self.create_subscription(
-            CameraInfo, '/camera/camera/color/camera_info', self.camera_info_callback, 10
+            CameraInfo, '/camera/color/camera_info', self.camera_info_callback, 10
         )
 
         # === ROS Publishers ===
@@ -75,7 +75,7 @@ class DynamicObjectRemovalFullSystem(Node):
         self.prev_time = time.time()
         self.fps = 0.0
 
-        self.get_logger().info("🚀 Dynamic Object Removal System Started!")
+        self.get_logger().info("Dynamic Object Removal System Started!")
         self.get_logger().info(f"Dynamic classes: {self.dynamic_classes}")
         self.get_logger().info(f"Static classes: {self.static_classes}")
 
