@@ -1,98 +1,342 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>WheeBot Dashboard (ROS2 Jazzy)</title>
-  <link rel="stylesheet" href="/style.css" />
+  <meta charset="UTF-8" />
+  <title>WheeBot WebUI</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <header>
-    <h1>WheeBot Dashboard</h1>
-    <div id="robotStatus" class="pill">● OFF</div>
+<div class="wrap">
+  <header class="topbar">
+    <div class="brand">WheeBot WebUI</div>
+    <div class="status-block">
+      <div class="port-stat">PORT STATUS: <span id="portStatSpan">—</span></div>
+      <div class="rbt-stat">ROBOT STATUS: <span id="rbtStat" class="stat-off">OFF</span></div>
+    </div>
   </header>
 
-  <!-- PORT STATUS BAR -->
-  <div class="port-bar" id="portsJson">
-    <span>🔌 Arduino: —</span>
-    <span>🧭 RPLIDAR: —</span>
-    <span>📷 RealSense: —</span>
-  </div>
-
-  <section class="layout">
-    <!-- MAP -->
-    <div class="map-panel card">
-      <div class="panel-header">
-        <h2>🗺️ Map 2D</h2>
-        <div class="row right">
-          <button id="btnMap">Refresh</button>
-          <a id="btnMapDL" download="map.png" class="link-btn">Download PNG</a>
+  <main class="grid">
+    <section class="panel map-panel">
+      <div class="panel-head">
+        <div class="title">MAP</div>
+        <div class="selects">
+          <label>Topic:
+            <input type="text" id="mapTopic" class="topic-input" value="/map" />
+          </label>
         </div>
       </div>
-      <img id="mapView" alt="map" />
-    </div>
+      <canvas id="mapCanvas"></canvas>
+      <div class="map-actions">
+        <small>Klik pada peta untuk memilih pose. Klik tombol untuk kirim goal.</small>
+      </div>
+    </section>
 
-    <!-- PANEL KANAN -->
-    <div class="side-panel">
-      <div class="card">
-        <h2>Teleoperation</h2>
-        <div class="teleop-btns">
-          <button class="key" data-k="W">W</button>
-          <div class="row">
-            <button class="key" data-k="A">A</button>
-            <button class="key" data-k="S">S</button>
-            <button class="key" data-k="D">D</button>
+    <section class="panel right-col">
+      <div class="block">
+        <button id="estopBtn" class="estop off">EMERGENCY STOP</button>
+      </div>
+
+      <div class="block">
+        <div class="wasd">
+          <button id="btnW">W</button>
+          <div class="mid">
+            <button id="btnA">A</button>
+            <button id="btnS">S</button>
+            <button id="btnD">D</button>
           </div>
         </div>
-        <div id="joystick" title="Drag to drive"><div class="knob"></div></div>
-        <button id="btnStop" class="danger">EMERGENCY STOP</button>
       </div>
 
-      <div class="card">
-        <h2>Navigation (Nav2)</h2>
-        <div class="row inputs">
-          <label>X <input id="goalX" type="number" step="0.1" value="0" /></label>
-          <label>Y <input id="goalY" type="number" step="0.1" value="0" /></label>
-          <label>Yaw° <input id="goalYaw" type="number" step="1" value="0" /></label>
+      <div class="block">
+        <div class="kv">NAVIGATION</div>
+        <div class="info">Pose: <span id="posePick">—</span></div>
+        <button id="navToPoseBtn">Navigate To Pose</button>
+      </div>
+    </section>
+
+    <section class="panel bottom-strip">
+      <div class="mini">
+        <div class="title-bar">
+          <div class="title">IMAGE</div>
+          <label>Topic:
+            <input type="text" id="imgTopic" class="topic-input-mini" value="/camera/color/image_raw" />
+          </label>
         </div>
-        <button id="btnSendGoal">Send Goal</button>
+        <img id="imgPreview" alt="camera preview" />
       </div>
-    </div>
-
-    <!-- CAMERA & POINTCLOUD -->
-    <div class="bottom-panel">
-      <div class="bottom-left card">
-        <div class="panel-header">
-          <h2>🎥 Camera</h2>
-          <div class="row right">
-            <label>Topic:
-              <select id="imageTopic"></select>
-            </label>
-            <button id="btnSnapImage">Show</button>
-          </div>
+      <div class="mini">
+        <div class="title-bar">
+          <div class="title">SCAN</div>
+          <label>Topic:
+            <input type="text" id="scanTopic" class="topic-input-mini" value="/scan" />
+          </label>
         </div>
-        <img id="imgView" alt="image snapshot" />
+        <canvas id="scanMini"></canvas>
       </div>
-
-      <div class="bottom-right card">
-        <div class="panel-header">
-          <h2>🧩 PointCloud</h2>
-          <div class="row right">
-            <label>Topic:
-              <select id="pcTopic"></select>
-            </label>
-            <button id="btnPC">Show</button>
-          </div>
+      <div class="mini">
+        <div class="title-bar">
+          <div class="title">POINTCLOUD</div>
+          <label>Topic:
+            <input type="text" id="cloudTopic" class="topic-input-mini" value="/dor/pointcloud/static_only" />
+          </label>
         </div>
-        <img id="pcView" alt="pointcloud" />
+        <canvas id="cloudMini"></canvas>
       </div>
-    </div>
-  </section>
+    </section>
+  </main>
+</div>
 
-  <footer>
-    <small>Runs locally. No external network required.</small>
-  </footer>
+<script>
+const ws = new WebSocket("ws://localhost:8000/ws");
 
-  <script src="/app.js"></script>
+// DOM refs
+const rbtStat = document.getElementById("rbtStat");
+const portStatSpan = document.getElementById("portStatSpan"); // UBAH (Req 1)
+const estopBtn = document.getElementById("estopBtn");
+const imgPreview = document.getElementById("imgPreview");
+const posePick = document.getElementById("posePick");
+
+const mapCanvas = document.getElementById("mapCanvas");
+const scanMini = document.getElementById("scanMini");
+const cloudMini = document.getElementById("cloudMini");
+
+const mapTopic = document.getElementById("mapTopic");
+const imgTopic = document.getElementById("imgTopic");
+const scanTopic = document.getElementById("scanTopic");
+const cloudTopic = document.getElementById("cloudTopic");
+
+const navBtn = document.getElementById("navToPoseBtn");
+
+let estopActive = false;
+let holdInterval = null;
+let chosenPose = null; // in map frame (x,y,yaw)
+
+// ---- Utils (Tidak ada perubahan) ----
+function sendJSON(obj){ ws.send(JSON.stringify(obj)); }
+function sendVel(lx, az){
+  if (!estopActive) sendJSON({type:"vel", linear_x: lx, angular_z: az});
+}
+function setTopics(){
+  sendJSON({
+    type: "set_topics",
+    map: mapTopic.value,
+    image: imgTopic.value,
+    scan: scanTopic.value,
+    cloud: cloudTopic.value
+  });
+}
+[mapTopic, imgTopic, scanTopic, cloudTopic].forEach(sel => {
+  sel.addEventListener("change", setTopics);
+});
+
+// E-STOP (Tidak ada perubahan)
+function updateEstopBtn(){
+  if (estopActive){
+    estopBtn.classList.remove("off");
+    estopBtn.classList.add("on");
+    estopBtn.textContent = "🛑 E-STOP ACTIVE";
+  } else {
+    estopBtn.classList.remove("on");
+    estopBtn.classList.add("off");
+    estopBtn.textContent = "EMERGENCY STOP";
+  }
+}
+estopBtn.addEventListener("click", ()=>{
+  estopActive = !estopActive;
+  if (estopActive){
+    sendJSON({type:"vel", linear_x:0.0, angular_z:0.0});
+  }
+  sendJSON({type:"estop", active: estopActive});
+  updateEstopBtn();
+});
+
+// WASD hold (Tidak ada perubahan)
+const btnW = document.getElementById("btnW");
+const btnA = document.getElementById("btnA");
+const btnS = document.getElementById("btnS");
+const btnD = document.getElementById("btnD");
+function startHold(lx, az){
+  if (holdInterval) clearInterval(holdInterval);
+  sendVel(lx, az);
+  holdInterval = setInterval(()=> sendVel(lx, az), 80);
+}
+function stopHold(){
+  if (holdInterval){ clearInterval(holdInterval); holdInterval = null; }
+  sendVel(0.0, 0.0);
+}
+function bindHold(btn, lx, az){
+  btn.addEventListener("mousedown", ()=> startHold(lx, az));
+  btn.addEventListener("mouseup", stopHold);
+  btn.addEventListener("mouseleave", stopHold);
+}
+bindHold(btnW, 1.0, 0.0);
+bindHold(btnS, -1.0, 0.0);
+bindHold(btnA, 0.0, 1.0);
+bindHold(btnD, 0.0, -1.0);
+document.addEventListener("keydown", (e)=>{
+  if (e.repeat) return;
+  if (e.target.tagName === "INPUT") return; 
+  switch(e.key.toLowerCase()){
+    case "w": startHold(1.0,0.0); break;
+    case "s": startHold(-1.0,0.0); break;
+    case "a": startHold(0.0,1.0); break;
+    case "d": startHold(0.0,-1.0); break;
+  }
+});
+document.addEventListener("keyup", (e)=>{
+  if (["w","a","s","d"].includes(e.key.toLowerCase())) stopHold();
+});
+
+// ---- Drawing helpers (Tidak ada perubahan) ----
+function drawMap(canvas, meta, data, robot){
+  const ctx = canvas.getContext("2d");
+  if (!meta || !data){ ctx.clearRect(0,0,canvas.width,canvas.height); return; }
+  const [w,h,res,[ox,oy]] = meta;
+  const maxW = canvas.clientWidth || 600;
+  const maxH = canvas.clientHeight || 400;
+  const scale = Math.min(maxW / w, maxH / h);
+  canvas.width = Math.floor(w * scale);
+  canvas.height = Math.floor(h * scale);
+  const img = ctx.createImageData(w, h);
+  for (let i=0;i<w*h;i++){
+    const v = data[i];
+    let col;
+    if (v < 0) col = 205;
+    else if (v === 0) col = 250;
+    else col = 30;
+    img.data[i*4+0] = col;
+    img.data[i*4+1] = col;
+    img.data[i*4+2] = col;
+    img.data[i*4+3] = 255;
+  }
+  const tmp = document.createElement("canvas");
+  tmp.width = w; tmp.height = h;
+  tmp.getContext("2d").putImageData(img, 0, 0);
+  ctx.save();
+  ctx.scale(scale, scale);
+  ctx.translate(0, h);
+  ctx.scale(1, -1);
+  ctx.drawImage(tmp, 0, 0);
+  if (robot){
+    const [rx, ry, yaw] = robot;
+    const mx = (rx - ox) / res;
+    const my = (ry - oy) / res;
+    ctx.fillStyle = "#007BFF";
+    ctx.strokeStyle = "#007BFF";
+    ctx.beginPath();
+    ctx.arc(mx, my, 4, 0, Math.PI*2);
+    ctx.fill();
+    const hx = mx + 12*Math.cos(yaw);
+    const hy = my + 12*Math.sin(yaw);
+    ctx.beginPath();
+    ctx.moveTo(mx, my);
+    ctx.lineTo(hx, hy);
+    ctx.stroke();
+  }
+  ctx.restore();
+}
+function drawXY(canvas, points){
+  const ctx = canvas.getContext("2d");
+  const W = canvas.clientWidth || 280;
+  const H = canvas.clientHeight || 180;
+  canvas.width = W; canvas.height = H;
+  ctx.clearRect(0,0,W,H);
+  if (!points){ return; }
+  let maxR = 1.0;
+  for (const [x,y] of points){ const r = Math.hypot(x,y); if (r>maxR) maxR = r; }
+  const s = 0.45 * Math.min(W,H) / maxR;
+  const cx = W*0.5, cy = H*0.8;
+  ctx.fillStyle = "#000";
+  for (const [x,y] of points){
+    const sx = cx + x*s;
+    const sy = cy - y*s;
+    ctx.fillRect(sx, sy, 1.5, 1.5);
+  }
+}
+
+// Map click (Tidak ada perubahan)
+mapCanvas.addEventListener("click", (e)=>{
+  const rect = mapCanvas.getBoundingClientRect();
+  const u = (e.clientX - rect.left) / mapCanvas.width;
+  const v = 1.0 - (e.clientY - rect.top) / mapCanvas.height; // flip
+  if (!latest.meta) return;
+  const [w,h,res,[ox,oy]] = latest.meta;
+  const mx = u * w;
+  const my = v * h;
+  const x = ox + mx * res;
+  const y = oy + my * res;
+  chosenPose = [x,y,0.0];
+  posePick.textContent = `x=${x.toFixed(2)}, y=${y.toFixed(2)}, yaw=0.00`;
+});
+
+// NAV to pose (Tidak ada perubahan)
+navBtn.addEventListener("click", ()=>{
+  if (!chosenPose) return;
+  const [x,y,yaw] = chosenPose;
+  sendJSON({type:"nav_to_pose", x, y, yaw});
+});
+
+// --- Tick handler from server ---
+const latest = { meta:null };
+ws.onmessage = (msg)=>{
+  const data = JSON.parse(msg.data);
+
+  if (data.type === "nav_feedback"){
+    alert((data.ok ? "Goal sent: " : "Goal failed: ") + data.msg);
+    return;
+  }
+  if (data.type !== "tick") return;
+
+  // --- UBAH (Req 1): Logika untuk styling dinamis ---
+  const rbt_status = data.rbt_status || "OFF";
+  rbtStat.textContent = rbt_status;
+  if (rbt_status === "ON") {
+    rbtStat.classList.add("stat-on");
+    rbtStat.classList.remove("stat-off");
+  } else {
+    rbtStat.classList.add("stat-off");
+    rbtStat.classList.remove("stat-on");
+  }
+
+  const ports = data.ports || {};
+  const rs = (ports.realsense_videos||[]).join(", ");
+  portStatSpan.textContent = `Lidar=${ports.lidar?'OK':'OFF'} | Arduino=${ports.arduino?'OK':'OFF'} | RS: ${rs}`;
+  
+  if (ports.lidar && ports.arduino) {
+    portStatSpan.classList.add("stat-ok");
+    portStatSpan.classList.remove("stat-err");
+  } else {
+    portStatSpan.classList.add("stat-err");
+    portStatSpan.classList.remove("stat-ok");
+  }
+  // --- Akhir Perubahan (Req 1) ---
+
+  // E-STOP sync
+  estopActive = !!data.estop;
+  updateEstopBtn();
+
+  // Image
+  if (data.image) imgPreview.src = data.image;
+
+  // Map
+  if (data.map && data.map.meta && data.map.data){
+    latest.meta = data.map.meta;
+    drawMap(mapCanvas, data.map.meta, data.map.data, data.odom);
+  }
+
+  // Scan
+  if (data.scan_xy){
+    drawXY(scanMini, data.scan_xy);
+  }
+
+  // Cloud
+  if (data.cloud_xy){
+    drawXY(cloudMini, data.cloud_xy);
+  }
+};
+
+// Initial topic set
+ws.addEventListener("open", setTopics);
+</script>
 </body>
 </html>
