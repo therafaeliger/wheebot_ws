@@ -13,7 +13,7 @@ def generate_launch_description():
         name='rtabmap_vio',
         output='screen',
         parameters=[{
-            "use_sim_time": False,
+            "use_sim_time": True,
             "frame_id": "base_link",
             "odom_frame_id": "odom_vio",
             "publish_tf": True,
@@ -29,11 +29,11 @@ def generate_launch_description():
             'subscribe_imu': True,
         }],
         remappings=[
-            ('rgb/image', '/dor/dynamic_removed/image'),
-            ('depth/image', '/dor/dynamic_removed/depth'),
-            ('rgb/camera_info', '/camera/color/camera_info'),
+            ('rgb/image', '/camera/image'),
+            ('depth/image', '/camera/depth_image'),
+            ('rgb/camera_info', '/camera/camera_info'),
             ('odom', '/odom/vio'),
-            ('imu', '/imu/data'),
+            ('imu', '/camera/imu'),
         ],
     )
 
@@ -43,7 +43,7 @@ def generate_launch_description():
         name='rtabmap_lio',
         output='screen',
         parameters=[{
-            "use_sim_time": False,
+            "use_sim_time": True,
             "frame_id": "base_link",
             "odom_frame_id": "odom_lio",
             "publish_tf": True,
@@ -58,10 +58,10 @@ def generate_launch_description():
             'subscribe_imu': True,
         }],
         remappings=[
-            ('scan', '/scan_for_slam'), # if u use lidar_range.py change to /scan_for_slam
+            ('scan', '/scan'), # if u use lidar_range.py change to /scan_for_slam
             # ('/scan_cloud', '/dor/dynamic_removed/pointcloud'),
             ('odom', '/odom/lio'),
-            ('imu', '/imu/data'),
+            ('imu', '/camera/imu'),
         ],
     )
 

@@ -15,6 +15,9 @@ find_package(sensor_msgs REQUIRED)
 find_package(twist_mux_msgs REQUIRED)
 find_package(rclcpp_action REQUIRED)
 find_package(visualization_msgs REQUIRED)
+find_package(nav_msgs REQUIRED)
+find_package(tf2_ros REQUIRED)
+find_package(tf2 REQUIRED)
 
 add_executable(safety_stop src/safety_stop.cpp)
 ament_target_dependencies(safety_stop rclcpp std_msgs sensor_msgs geometry_msgs twist_mux_msgs rclcpp_action visualization_msgs)
@@ -28,6 +31,7 @@ install(TARGETS
 
 install(PROGRAMS
   ${PROJECT_NAME}/safety_stop.py
+  ${PROJECT_NAME}/lidar_range.py
   DESTINATION lib/${PROJECT_NAME}
 )
 

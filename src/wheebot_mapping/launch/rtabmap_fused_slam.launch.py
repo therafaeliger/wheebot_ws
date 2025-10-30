@@ -10,7 +10,7 @@ from launch.substitutions import LaunchConfiguration
 
 def generate_launch_description():
     parameters=[{
-        "use_sim_time": False,
+        "use_sim_time": True,
         "subscribe_depth": True,
         "subscribe_rgbd": False,
         "subscribe_rgb": True,
@@ -35,13 +35,13 @@ def generate_launch_description():
 
     remappings=[
         ('map', '/map'),
-        ('rgb/image', '/dor/inpainted/image'),
-        ('depth/image', '/dor/dynamic_removed/depth'),
-        ('rgb/camera_info', '/camera/color/camera_info'),
+        ('rgb/image', '/camera/image'),
+        ('depth/image', '/camera/depth_image'),
+        ('rgb/camera_info', '/camera/camera_info'),
         # ('scan', '/scan_for_slam'),
         # ('scan_cloud_topic', '/dor/dynamic_removed/pointcloud'),
         ('odom', '/odometry/filtered'),
-        ('imu', '/imu/data'),
+        ('imu', '/camera/imu'),
     ]
 
     return LaunchDescription([

@@ -47,7 +47,7 @@ def generate_launch_description():
     )
 
     lidar_filter = Node(
-        package='wheebot_mapping',
+        package='wheebot_utils',
         executable='lidar_range.py',
         name='lidar_range',
         output='screen',
@@ -97,4 +97,18 @@ def generate_launch_description():
         # slam,
         # navigation,
         # imu_driver_node,
+
+        # Static TF
+        Node(
+            package='tf2_ros',
+            executable='static_transform_publisher',
+            output='screen',
+            arguments=['0.3616', '0.2157', '0.63', '0', '0', '0', 'base_link', 'camera_link']
+        ),
+        Node(
+            package='tf2_ros',
+            executable='static_transform_publisher',
+            output='screen',
+            arguments=['0.3036', '0.2157', '0.7', '3.1416', '0', '0', 'base_link', 'laser_link']
+        ),
     ])

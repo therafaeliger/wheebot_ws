@@ -15,16 +15,9 @@ find_package(geometry_msgs REQUIRED)
 find_package(tf2_ros REQUIRED)
 find_package(tf2 REQUIRED)
 
-ament_python_install_package(${PROJECT_NAME})
-
 install(
   DIRECTORY launch rviz maps
   DESTINATION share/${PROJECT_NAME}
-)
-
-install(PROGRAMS
-  ${PROJECT_NAME}/lidar_range.py
-  DESTINATION lib/${PROJECT_NAME}
 )
 
 if(BUILD_TESTING)
