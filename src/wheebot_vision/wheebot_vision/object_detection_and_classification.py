@@ -13,6 +13,7 @@ import numpy as np
 import cv2
 import time
 from ultralytics import YOLO
+from std_msgs.msg import Float32
 
 from concurrent.futures import ThreadPoolExecutor
 
@@ -72,6 +73,7 @@ class ObjectDetectionAndClassification(Node):
         self.viz_pub = self.create_publisher(
             Image, '/yolo/viz', 10
         )
+        self.fps_pub = self.create_publisher(Float32, '/yolo/fps', 10)
         
         # cache
         self.camera_frame = 'camera_color_optical_frame'
@@ -189,6 +191,11 @@ class ObjectDetectionAndClassification(Node):
         if self.show_debug:
             fps = 1.0 / max(1e-3, (time.time()-t0))
             self.get_logger().info(f"FPS: {fps:.1f}")
+
+            # publish
+            fps_msg = Float32()
+            fps_msg.data = fps
+            self.fps_pub.publish(fps_msg)
 
 
 def main(args=None):

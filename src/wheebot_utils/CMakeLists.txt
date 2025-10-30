@@ -30,8 +30,9 @@ install(TARGETS
 )
 
 install(PROGRAMS
-  ${PROJECT_NAME}/safety_stop.py
+  ${PROJECT_NAME}/image_saver.py
   ${PROJECT_NAME}/lidar_range.py
+  ${PROJECT_NAME}/safety_stop.py
   DESTINATION lib/${PROJECT_NAME}
 )
 
