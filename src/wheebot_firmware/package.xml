@@ -8,7 +8,6 @@
   <license>TODO: License declaration</license>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
-  <buildtool_depend>ament_cmake_python</buildtool_depend>
 
   <depend>rclcpp</depend>
   <depend>rclpy</depend>
@@ -18,9 +17,6 @@
   <depend>pluginlib</depend>
   <depend>libserial-dev</depend>
   <!-- <depend>pal_statistics</depend> -->
-
-  <exec_depend>python3-serial</exec_depend>
-  <exec_depend>python3-smbus</exec_depend>
 
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>ament_lint_common</test_depend>

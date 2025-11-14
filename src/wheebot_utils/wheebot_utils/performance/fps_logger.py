@@ -10,7 +10,7 @@ class FPSLogger(Node):
     def __init__(self):
         super().__init__('fps_logger')
 
-        self.output_file = f"fps_log_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
+        self.output_file = f"/home/rafael/wheebot_ws/src/wheebot_utils/results/fps_log_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
         self.get_logger().info(f"Simpan log FPS ke: {self.output_file}")
 
         # Buat file CSV dan tulis header

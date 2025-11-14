@@ -13,8 +13,10 @@ def generate_launch_description():
     
     wheebot_controller_pkg = get_package_share_directory('wheebot_controller')
 
-    use_sim_time_arg = DeclareLaunchArgument(name="use_sim_time", default_value="True",
-                                      description="Use simulated time"
+    use_sim_time_arg = DeclareLaunchArgument(
+        name="use_sim_time",
+        default_value="True",
+        description="Use simulation (Gazebo) clock if true"
     )
 
     joy_teleop = Node(
@@ -54,12 +56,10 @@ def generate_launch_description():
         parameters=[{"use_sim_time": LaunchConfiguration("use_sim_time")}]
     )
 
-    return LaunchDescription(
-        [
-            use_sim_time_arg,
-            joy_teleop,
-            joy_node,
-            twist_mux_launch,
-            twist_relay_node,
-        ]
-    )
+    return LaunchDescription([
+        use_sim_time_arg,
+        joy_teleop,
+        joy_node,
+        twist_mux_launch,
+        twist_relay_node,
+    ])

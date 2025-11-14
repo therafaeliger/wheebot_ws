@@ -6,7 +6,6 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 endif()
 
 find_package(ament_cmake REQUIRED)
-find_package(ament_cmake_python REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(rclpy REQUIRED)
 find_package(std_msgs REQUIRED)
@@ -16,8 +15,6 @@ find_package(rclcpp_lifecycle REQUIRED)
 find_package(PkgConfig)
 # find_package(pal_statistics REQUIRED)
 pkg_check_modules(SERIAL libserial)
-
-ament_python_install_package(${PROJECT_NAME})
 
 add_library(${PROJECT_NAME} SHARED 
   src/wheebot_interface.cpp
@@ -51,11 +48,6 @@ install(
 install(
   DIRECTORY launch
   DESTINATION share/${PROJECT_NAME}
-)
-
-install(PROGRAMS
-  ${PROJECT_NAME}/mpu6050_driver.py
-  DESTINATION lib/${PROJECT_NAME}
 )
 
 install(TARGETS

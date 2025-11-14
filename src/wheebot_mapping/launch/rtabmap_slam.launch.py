@@ -42,9 +42,9 @@ def generate_launch_description():
 
             'subscribe_rgbd': 'false',
 
-            'subscribe_scan': 'true',
+            'subscribe_scan': 'false',
             'scan_topic': '/scan_for_slam',
-            'subscribe_scan_cloud': 'false',
+            'subscribe_scan_cloud': 'true',
             'scan_cloud_topic': '/dor/dynamic_removed/pointcloud',
 
             'visual_odometry': 'true',

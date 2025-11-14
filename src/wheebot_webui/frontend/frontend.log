@@ -1,0 +1,4 @@
+127.0.0.1 - - [13/Nov/2025 16:27:45] "GET / HTTP/1.1" 304 -
+127.0.0.1 - - [13/Nov/2025 16:27:45] "GET /style.css HTTP/1.1" 304 -
+127.0.0.1 - - [13/Nov/2025 16:27:45] code 404, message File not found
+127.0.0.1 - - [13/Nov/2025 16:27:45] "GET /favicon.ico HTTP/1.1" 404 -

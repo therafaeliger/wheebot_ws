@@ -1,0 +1,22 @@
+/home/rafael/wheebot_ws/src/wheebot_webui/backend/main.py:349: DeprecationWarning: 
+        on_event is deprecated, use lifespan event handlers instead.
+
+        Read more about it in the
+        [FastAPI docs for Lifespan Events](https://fastapi.tiangolo.com/advanced/events/).
+        
+  @app.on_event("startup")
+INFO:     Started server process [7444]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+INFO:     127.0.0.1:56312 - "WebSocket /ws" [accepted]
+INFO:     connection open
+[INFO] [1763026065.825929045] [wheebot_webui_node]: Subscribed MAP: /map
+[INFO] [1763026065.834876995] [wheebot_webui_node]: Subscribed IMAGE: /camera/color/image_raw
+[INFO] [1763026065.836221831] [wheebot_webui_node]: Subscribed SCAN: /scan
+[INFO] [1763026065.837534003] [wheebot_webui_node]: Subscribed POINTCLOUD: /dor/pointcloud/static_only
+INFO:     connection closed
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [7444]
