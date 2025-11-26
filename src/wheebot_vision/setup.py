@@ -30,6 +30,8 @@ setup(
             'object_detection_and_classification = wheebot_vision.object_detection_and_classification:main',
             'dynamic_object_removal = wheebot_vision.dynamic_object_removal:main',
             'pointcloud_republisher = wheebot_vision.pointcloud_republisher:main',
+            'image_color_decompressor = wheebot_vision.image_color_decompressor:main',
+            'image_depth_decompressor = wheebot_vision.image_depth_decompressor:main',
         ],
     },
 )
