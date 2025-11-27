@@ -59,7 +59,7 @@ def generate_launch_description():
             name='rplidar_a1',
             output='screen',
             parameters=[{
-                'serial_port': '/dev/ttyUSB0', # periksa kalau pakai mikon
+                'serial_port': '/dev/ttyUSB1', # periksa kalau pakai mikon
                 'serial_baudrate': 115200,
                 'frame_id': 'laser_link',
                 'inverted': False,

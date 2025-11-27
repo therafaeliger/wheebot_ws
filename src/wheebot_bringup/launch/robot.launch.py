@@ -1,25 +1,35 @@
-import os
 from launch import LaunchDescription
 from launch.actions import IncludeLaunchDescription
+from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch_ros.actions import Node
 from ament_index_python.packages import get_package_share_directory
+from launch.actions import TimerAction
+import os
 
 
 def generate_launch_description():
     # init hardware
     hardware_interface = IncludeLaunchDescription(
-        os.path.join(
-            get_package_share_directory("wheebot_firmware"),
-            "launch",
-            "hardware_interface.launch.py"
-        ),
+        PythonLaunchDescriptionSource(
+            os.path.join(
+                get_package_share_directory("wheebot_firmware"),
+                "launch",
+                "hardware_interface.launch.py"
+            )
+        )
     )
     sensor_run = IncludeLaunchDescription(
-        os.path.join(
-            get_package_share_directory("wheebot_firmware"),
-            "launch",
-            "sensor.launch.py"
-        ),
+        PythonLaunchDescriptionSource(
+            os.path.join(
+                get_package_share_directory("wheebot_firmware"),
+                "launch",
+                "sensor.launch.py"
+            )
+        )
+    )
+    sensor_run_delayed = TimerAction(
+        period=3.0,
+        actions=[sensor_run]
     )
     lidar_filter = Node(
         package='wheebot_utils',
@@ -35,24 +45,28 @@ def generate_launch_description():
     
     # run controller
     controller = IncludeLaunchDescription(
-        os.path.join(
-            get_package_share_directory("wheebot_controller"),
-            "launch",
-            "controller.launch.py"
+        PythonLaunchDescriptionSource(
+            os.path.join(
+                get_package_share_directory("wheebot_controller"),
+                "launch",
+                "controller.launch.py"
+            )
         ),
         launch_arguments={
-            "use_sim_time": "False"
+            'use_sim_time': 'False',
         }.items(),
     )
     joystick = IncludeLaunchDescription(
-        os.path.join(
-            get_package_share_directory("wheebot_controller"),
-            "launch",
-            "joystick_teleop.launch.py"
+        PythonLaunchDescriptionSource(
+            os.path.join(
+                get_package_share_directory("wheebot_controller"),
+                "launch",
+                "joystick_teleop.launch.py"
+            )
         ),
         launch_arguments={
-            "use_sim_time": "False"
-        }.items()
+            'use_sim_time': 'False',
+        }.items(),
     )
 
     # mode 1: using fused odometry
@@ -114,22 +128,23 @@ def generate_launch_description():
     
     return LaunchDescription([
         hardware_interface,
-        sensor_run,
-        lidar_filter,
+        # sensor_run,
+        sensor_run_delayed,
+        # lidar_filter,
 
         controller,
         joystick,
 
         # mode 1: using fused odometry
-        localization,
-        mapping,
+        # localization,
+        # mapping,
 
         # mode 2: using rtabmap default launch
         # slam,
 
-        navigation,
+        # navigation,
 
-        static_tf_camera,
-        static_tf_lidar,
+        # static_tf_camera,
+        # static_tf_lidar,
         
     ])
