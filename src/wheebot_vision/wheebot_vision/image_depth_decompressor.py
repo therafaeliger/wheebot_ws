@@ -12,12 +12,14 @@ class DepthDecompressor(Node):
         # Subscribe ke topik compressed
         self.subscription = self.create_subscription(
             CompressedImage,
-            '/camera/aligned_depth_to_color/image_raw/compressedDepth',
+            # '/camera/aligned_depth_to_color/image_raw/compressedDepth',
+            '/camera/depth/image_rect_raw/compressedDepth',
             self.listener_callback,
             10)
         
         # Publisher topik raw baru
-        self.publisher_ = self.create_publisher(Image, '/camera/depth_decompressed', 10)
+        # self.publisher_ = self.create_publisher(Image, '/camera/aligned_depth_to_color/image_raw/decompressed', 10)
+        self.publisher_ = self.create_publisher(Image, '/camera/depth/image_rect_raw/decompressed', 10)
         
         self.bridge = CvBridge()
         self.get_logger().info('Depth Decompressor Node Started (Manual Decode Mode)...')
