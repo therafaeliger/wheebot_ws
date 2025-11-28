@@ -34,7 +34,7 @@ class ImageStreamServer(Node):
 
         self.sub_depth = self.create_subscription(
             Image,
-            "/camera/depth/image_rect_raw",
+            "/camera/aligned_depth_to_color/image_raw",
             self.depth_callback,
             10
         )
