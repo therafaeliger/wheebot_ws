@@ -21,11 +21,17 @@ def generate_launch_description():
                 '/rs_launch.py']),
             launch_arguments={
                 'camera_namespace': '',
+
                 'enable_gyro': 'true',
                 'enable_accel': 'true',
+                'enable_color': 'true',
+                'enable_depth': 'true',
+
                 'unite_imu_method': LaunchConfiguration('unite_imu_method'),
+
                 'align_depth.enable': 'true',
                 'enable_sync': 'true',
+
                 'rgb_camera.profile': '640x360x30',
                 'depth_module.depth_profile': '640x360x30',
                 

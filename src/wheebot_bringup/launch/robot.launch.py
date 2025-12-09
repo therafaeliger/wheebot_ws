@@ -117,13 +117,14 @@ def generate_launch_description():
         package='tf2_ros',
         executable='static_transform_publisher',
         output='screen',
-        arguments=['0.3616', '0.2157', '0.63', '0', '0', '0', 'base_link', 'camera_link']
+        arguments=['0.3616', '0.2157', '0.63', '-0.1', '0', '0', 'base_link', 'camera_link']
     )
     static_tf_lidar = Node(
         package='tf2_ros',
         executable='static_transform_publisher',
         output='screen',
-        arguments=['0.3036', '0.2157', '0.7', '3.1416', '0', '0', 'base_link', 'laser_link']
+        # arguments=['0.3036', '0.2157', '0.7', '3.1416', '0', '0', 'base_link', 'laser_link']
+        arguments=['0.3036', '0.2157', '0.7', '0', '0', '0', 'base_link', 'laser_link']
     )
     
     return LaunchDescription([
@@ -133,7 +134,7 @@ def generate_launch_description():
         # lidar_filter,
 
         controller,
-        joystick,
+        # joystick,
 
         # mode 1: using fused odometry
         # localization,
@@ -144,7 +145,7 @@ def generate_launch_description():
 
         # navigation,
 
-        # static_tf_camera,
-        # static_tf_lidar,
+        static_tf_camera,
+        static_tf_lidar,
         
     ])

@@ -15,8 +15,21 @@ def generate_launch_description():
         os.path.join(rtabmap_launch_dir, "launch", "rtabmap.launch.py"),
         launch_arguments={
             'use_sim_time': 'false',
-            'args': '--delete_db_on_start',
+
+            # 'args': '--delete_db_on_start',
             # 'args': '--database_path ~/.ros/rtabmap.db',
+            'args': '--delete_db_on_start \
+                    --Grid/MinGroundHeight -0.4 \
+                    --Grid/MaxGroundHeight 0.4 \
+                    --Grid/MaxObstacleHeight 1.0 \
+                    --Grid/RangeMin 0.1 \
+                    --Grid/RangeMax 4.0 \
+                    --Grid/NoiseFilteringRadius 0.1 \
+                    --Grid/NoiseFilteringMinNeighbors 3 \
+                    --Grid/VoxelSize 0.05 \
+                    --Grid/FootprintLength 0.5 \
+                    --Grid/FootprintWidth 0.4 ',
+
             'rtabmap_viz': 'true',
             'rviz': 'true',
 
@@ -37,14 +50,18 @@ def generate_launch_description():
             'approx_sync_max_interval': '0.05',
 
             'rgb_topic': '/camera/color/image_raw',
-            'depth_topic': '/dor/dynamic_removed/depth',
+            'depth_topic': '/camera/depth/image_rect_raw',
             'camera_info_topic': '/camera/color/camera_info',
+
+            # 'rgb_topic': '/dor/inpainted/image',
+            # 'depth_topic': '/dor/inpainted/depth',
+            # 'camera_info_topic': '/camera/color/camera_info',
 
             'subscribe_rgbd': 'false',
 
             'subscribe_scan': 'false',
             'scan_topic': '/scan_for_slam',
-            'subscribe_scan_cloud': 'true',
+            'subscribe_scan_cloud': 'false',
             'scan_cloud_topic': '/dor/dynamic_removed/pointcloud',
 
             'visual_odometry': 'true',

@@ -13,7 +13,7 @@ def generate_launch_description():
     # add sim time arg
     use_sim_time_arg = DeclareLaunchArgument(
         name="use_sim_time",
-        default_value='true',
+        default_value='false',
         description='Use simulation (Gazebo) clock if true'
     )
     use_sim_time = LaunchConfiguration('use_sim_time')
@@ -42,11 +42,14 @@ def generate_launch_description():
             'subscribe_imu': True,
         }],
         remappings=[
-            ('rgb/image', '/camera/image'),
-            ('depth/image', '/camera/depth_image'),
-            ('rgb/camera_info', '/camera/camera_info'),
+            # ('rgb/image', '/camera/color/image_raw'),
+            # ('depth/image', '/camera/aligned_depth_to_color/image_raw'),
+            # ('rgb/camera_info', '/camera/color/camera_info'),
+            ('rgb/image', '/dor/inpainted/image'),
+            ('depth/image', '/dor/inpainted/depth'),
+            ('rgb/camera_info', '/camera/color/camera_info'),
             ('odom', '/odom/vio'),
-            ('imu', '/camera/imu'),
+            ('imu', '/imu/data'),
         ],
     )
 
@@ -75,7 +78,7 @@ def generate_launch_description():
             ('scan', '/scan'), # if u use lidar_range.py change to /scan_for_slam
             # ('/scan_cloud', '/dor/dynamic_removed/pointcloud'),
             ('odom', '/odom/lio'),
-            ('imu', '/camera/imu'),
+            ('imu', '/imu/data'),
         ],
     )
 

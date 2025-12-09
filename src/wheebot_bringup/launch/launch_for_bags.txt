@@ -1,0 +1,122 @@
+gunakan ros2 bag yang aman:
+
+ros2 bag record \
+/camera/accel/imu_info \
+/camera/accel/metadata \
+/camera/accel/sample \
+/camera/aligned_depth_to_color/camera_info \
+/camera/aligned_depth_to_color/image_raw \
+/camera/color/camera_info \
+/camera/color/image_raw \
+/camera/color/metadata \
+/camera/depth/camera_info \
+/camera/depth/image_rect_raw \
+/camera/depth/metadata \
+/camera/extrinsics/depth_to_accel \
+/camera/extrinsics/depth_to_color \
+/camera/extrinsics/depth_to_depth \
+/camera/extrinsics/depth_to_gyro \
+/camera/gyro/imu_info \
+/camera/gyro/metadata \
+/camera/gyro/sample \
+/camera/imu \
+/diagnostics \
+/dynamic_joint_states \
+/imu/data \
+/joint_states \
+/parameter_events \
+/robot_description \
+/rosout \
+/scan \
+/tf \
+/tf_static \
+/wheebot_controller/cmd_vel \
+/wheebot_controller/cmd_vel_out \
+/wheebot_controller/odom \
+/controller_manager/activity \
+/controller_manager/introspection_data/full \
+/controller_manager/introspection_data/names \
+/controller_manager/introspection_data/values \
+/controller_manager/statistics/full \
+/controller_manager/statistics/names \
+/controller_manager/statistics/values \
+/joint_state_broadcaster/transition_event \
+/wheebot_controller/transition_event
+
+
+
+untuk ros2 bag terbalik:
+
+$ ros2 bag play my_bag --exclude-topics /tf_static /tf /another_topic
+
+old:
+$ ros2 run tf2_ros static_transform_publisher 0.3616 0.2157 0.63 -0.1 0 0 base_link camera_link
+new:
+$ ros2 run tf2_ros static_transform_publisher --x 0.3616 --y 0.2157 --z 0.63 --roll 0 --pitch 0 --yaw -0.1 --frame-id base_link --child-frame-id camera_link
+
+old:
+$ ros2 run tf2_ros static_transform_publisher 0.3036 0.2157 0.7 3.1416 0 0 base_link laser_link
+new:
+$ ros2 run tf2_ros static_transform_publisher --x 0.3036 --y 0.2157 --z 0.7 --roll 0 --pitch 0 --yaw 3.1416 --frame-id base_link --child-frame-id laser_link
+
+
+
+
+
+rafael@rafael-Victus:~/wheebot_ws$ ros2 topic list
+/camera/accel/imu_info
+/camera/accel/metadata
+/camera/accel/sample
+/camera/aligned_depth_to_color/camera_info
+/camera/aligned_depth_to_color/image_raw
+/camera/color/camera_info
+/camera/color/image_raw
+/camera/color/metadata
+/camera/depth/camera_info
+/camera/depth/image_rect_raw
+/camera/depth/metadata
+/camera/extrinsics/depth_to_accel
+/camera/extrinsics/depth_to_color
+/camera/extrinsics/depth_to_depth
+/camera/extrinsics/depth_to_gyro
+/camera/gyro/imu_info
+/camera/gyro/metadata
+/camera/gyro/sample
+/camera/imu
+/clicked_point
+/controller_manager/activity
+/controller_manager/introspection_data/full
+/controller_manager/introspection_data/names
+/controller_manager/introspection_data/values
+/controller_manager/statistics/full
+/controller_manager/statistics/names
+/controller_manager/statistics/values
+/diagnostics
+/dor/dynamic_removed/depth
+/dor/dynamic_removed/image
+/dor/dynamic_removed/pointcloud
+/dor/inpainted/depth
+/dor/inpainted/image
+/dor/pointcloud/dynamic_only
+/dor/pointcloud/static_only
+/dynamic_joint_states
+/events/read_split
+/goal_pose
+/imu/data
+/initialpose
+/joint_state_broadcaster/transition_event
+/joint_states
+/parameter_events
+/robot_description
+/rosout
+/scan
+/tf
+/tf_static
+/wheebot_controller/cmd_vel_out
+/wheebot_controller/odom
+/wheebot_controller/transition_event
+/yolo/detections
+/yolo/fps
+/yolo/mask/dynamic_only
+/yolo/mask/static_only
+/yolo/viz

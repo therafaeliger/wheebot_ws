@@ -41,13 +41,13 @@ def compute_ate(ref_xyz, est_xyz):
     mae = np.mean(np.abs(errors))
 
     # optional
-    # import matplotlib.pyplot as plt
-    # plt.plot(ref_xyz[:,0], ref_xyz[:,1], 'g-', label="Reference")
-    # plt.plot(est_xyz[:,0], est_xyz[:,1], 'r--', label="Estimated (aligned)")
-    # plt.axis('equal')
-    # plt.legend()
-    # plt.title("Trajectory Comparison")
-    # plt.show()
+    import matplotlib.pyplot as plt
+    plt.plot(ref_xyz[:,0], ref_xyz[:,1], 'g-', label="Reference")
+    plt.plot(est_xyz[:,0], est_xyz[:,1], 'r--', label="Estimated (aligned)")
+    plt.axis('equal')
+    plt.legend()
+    plt.title("Trajectory Comparison")
+    plt.show()
 
     return rmse, mae, errors
 

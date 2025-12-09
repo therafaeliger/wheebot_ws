@@ -7,7 +7,7 @@ from launch.substitutions import LaunchConfiguration
 def generate_launch_description():
     # add launch arg
     use_sim_time_arg = DeclareLaunchArgument(
-        'use_sim_time', default_value='true',
+        'use_sim_time', default_value='false',
         description='Use simulation (Gazebo) clock if true')
     use_sim_time = LaunchConfiguration('use_sim_time')
 
@@ -37,14 +37,16 @@ def generate_launch_description():
         "sync_queue_size": 15,
         "approx_sync_max_interval": 0.05,
 
-        "Reg/Force3DoF":"true",
-        "Grid/RayTracing":"true",
-        "Grid/3D":"false",
-        "Grid/RangeMax":"3",
-        "Grid/NormalsSegmentation":"false",
-        "Grid/MaxGroundHeight":"0.05",
-        "Grid/MaxObstacleHeight":"0.4",
-        "Optimizer/GravitySigma":"0",
+        "Grid/MinGroundHeight":"-0.4",
+        "Grid/MaxGroundHeight":"0.4",
+        "Grid/MaxObstacleHeight":"1.0",
+        "Grid/RangeMin":"0.1",
+        "Grid/RangeMax":"4.0",
+        "Grid/NoiseFilteringRadius":"0.1",
+        "Grid/NoiseFilteringMinNeighbors":"3",
+        "Grid/VoxelSize":"0.05",
+        "Grid/FootprintLength":"0.5",
+        "Grid/FootprintWidth":"0.4",
 
         # # for saving and loading map, don't forget to delete arguments '--delete_db_on_start'
         # "database_path": os.path.join(get_package_share_directory('wheebot_mapping'), 'rtabmap.db'),
@@ -53,13 +55,19 @@ def generate_launch_description():
 
     remappings=[
         ('map', '/map'),
-        ('rgb/image', '/camera/image'),
-        ('depth/image', '/camera/depth_image'),
-        ('rgb/camera_info', '/camera/camera_info'),
+
+        # ('rgb/image', '/camera/color/image_raw'),
+        # ('depth/image', '/camera/aligned_depth_to_color/image_raw'),
+        # ('rgb/camera_info', '/camera/color/camera_info'),
+        ('rgb/image', '/dor/inpainted/image'),
+        ('depth/image', '/dor/inpainted/depth'),
+        ('rgb/camera_info', '/camera/color/camera_info'),
+
         # ('scan', '/scan_for_slam'),
         # ('scan_cloud_topic', '/dor/dynamic_removed/pointcloud'),
+
         ('odom', '/odometry/filtered'),
-        ('imu', '/camera/imu'),
+        ('imu', '/imu/data'),
     ]
 
     slam_node = Node(
