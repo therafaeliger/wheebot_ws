@@ -1,4 +1,4 @@
-gunakan ros2 bag yang aman:
+gunakan ros2 bag record yang aman:
 
 ros2 bag record \
 /camera/accel/imu_info \
@@ -44,7 +44,6 @@ ros2 bag record \
 /wheebot_controller/transition_event
 
 
-
 untuk ros2 bag terbalik:
 
 $ ros2 bag play my_bag --exclude-topics /tf_static /tf /another_topic
@@ -58,9 +57,6 @@ old:
 $ ros2 run tf2_ros static_transform_publisher 0.3036 0.2157 0.7 3.1416 0 0 base_link laser_link
 new:
 $ ros2 run tf2_ros static_transform_publisher --x 0.3036 --y 0.2157 --z 0.7 --roll 0 --pitch 0 --yaw 3.1416 --frame-id base_link --child-frame-id laser_link
-
-
-
 
 
 rafael@rafael-Victus:~/wheebot_ws$ ros2 topic list
