@@ -13,12 +13,10 @@ class FPSLogger(Node):
         self.output_file = f"/home/rafael/wheebot_ws/src/wheebot_utils/results/fps_log_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
         self.get_logger().info(f"Simpan log FPS ke: {self.output_file}")
 
-        # Buat file CSV dan tulis header
         with open(self.output_file, mode='w', newline='') as f:
             writer = csv.writer(f)
             writer.writerow(["timestamp", "fps"])
 
-        # Subscribe ke topik FPS
         self.create_subscription(Float32, '/yolo/fps', self.fps_callback, 10)
 
     def fps_callback(self, msg):

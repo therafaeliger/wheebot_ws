@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 
-import sys
-sys.path.insert(0, "/home/rafael/env/yolo_env/lib/python3.12/site-packages")
+import sys, os
+home = os.path.expanduser("~")
+sys.path.insert(0, f"{home}/env/yolo_env/lib/python3.12/site-packages")
 
 import rclpy
 from rclpy.node import Node
@@ -23,7 +24,7 @@ class ObjectDetectionAndClassification(Node):
         super().__init__('object_detection_and_classification')
 
         # declare parameters
-        self.declare_parameter('yolo_model', 'yolo11n-seg.pt')
+        self.declare_parameter('yolo_model', 'yolov8s-seg.pt')
         self.declare_parameter('dynamic_classes', ['person','car','truck','motorbike','bicycle','bus','dog','cat'])
         self.declare_parameter('static_classes', ['chair','table','sofa','monitor','tv','bed','refrigerator'])
         self.declare_parameter('mask_dilate', 2)

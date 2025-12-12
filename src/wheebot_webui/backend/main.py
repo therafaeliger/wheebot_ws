@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
-import sys
-sys.path.insert(0, "/home/rafael/env/yolo_env/lib/python3.12/site-packages")
+
+import sys, os
+home = os.path.expanduser("~")
+sys.path.insert(0, f"{home}/env/yolo_env/lib/python3.12/site-packages")
 
 # import library
 import sys, os, glob, json, asyncio, threading, time

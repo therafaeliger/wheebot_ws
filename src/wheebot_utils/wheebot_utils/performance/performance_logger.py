@@ -6,7 +6,6 @@ import subprocess
 import re
 
 def get_gpu_usage():
-    """Ambil data GPU usage (NVIDIA GPU via nvidia-smi)."""
     try:
         result = subprocess.check_output(
             ["nvidia-smi", "--query-gpu=utilization.gpu,memory.used,memory.total",
@@ -18,8 +17,7 @@ def get_gpu_usage():
     except Exception:
         return 0.0, 0.0  # Jika tidak ada GPU NVIDIA
 
-def monitor_system(output_file="/home/rafael/wheebot_ws/src/wheebot_utils/results/system_usage.csv", interval=1):
-    """Monitoring sistem tiap detik dan simpan ke CSV."""
+def monitor_system(output_file=f"/home/rafael/wheebot_ws/src/wheebot_utils/results/system_usage_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}.csv", interval=1):
     fieldnames = ["timestamp", "cpu_percent", "ram_percent", "gpu_percent", "vram_percent"]
 
     with open(output_file, mode="w", newline="") as csvfile:
@@ -54,4 +52,4 @@ def monitor_system(output_file="/home/rafael/wheebot_ws/src/wheebot_utils/result
             print(f"Data tersimpan di: {output_file}")
 
 if __name__ == "__main__":
-    monitor_system(output_file="/home/rafael/wheebot_ws/src/wheebot_utils/results/system_usage.csv", interval=1)
+    monitor_system(output_file=f"/home/rafael/wheebot_ws/src/wheebot_utils/results/system_usage_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}.csv", interval=1)
