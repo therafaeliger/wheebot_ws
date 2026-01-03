@@ -4,10 +4,10 @@
 Adafruit_MCP4725 dacAxisX;
 Adafruit_MCP4725 dacAxisY;
 
-#define ADDR_AXIS_X 0x60
-#define ADDR_AXIS_Y 0x61
+#define ADDR_AXIS_X 0x61
+#define ADDR_AXIS_Y 0x60
 #define IN_AXIS_X A0
-#define IN_AXIS_Y A2
+#define IN_AXIS_Y A1
 
 int inAxisXVal = 0, inAxisYVal = 0;
 int serAxisXVal = 0, serAxisYVal = 0;

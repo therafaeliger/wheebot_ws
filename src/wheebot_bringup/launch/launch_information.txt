@@ -1,4 +1,54 @@
+gunakan teleop:
+ros2 run teleop_twist_keyboard teleop_twist_keyboard --ros-args --remap /cmd_vel:=/key_vel
+ros2 run key_teleop key_teleop --ros-args --remap /key_vel:=/wheebot_controller/cmd_vel
+
+
 gunakan ros2 bag record yang aman:
+
+ros2 bag record \
+/camera/accel/imu_info \
+/camera/accel/metadata \
+/camera/accel/sample \
+/camera/aligned_depth_to_color/camera_info \
+/camera/aligned_depth_to_color/image_raw \
+/camera/color/camera_info \
+/camera/color/image_raw \
+/camera/color/metadata \
+/camera/depth/camera_info \
+/camera/depth/image_rect_raw \
+/camera/depth/metadata \
+/camera/extrinsics/depth_to_accel \
+/camera/extrinsics/depth_to_color \
+/camera/extrinsics/depth_to_depth \
+/camera/extrinsics/depth_to_gyro \
+/camera/gyro/imu_info \
+/camera/gyro/metadata \
+/camera/gyro/sample \
+/camera/imu \
+/diagnostics \
+/dynamic_joint_states \
+/imu/data \
+/joint_states \
+/parameter_events \
+/robot_description \
+/rosout \
+/tf \
+/tf_static \
+/wheebot_controller/cmd_vel \
+/wheebot_controller/cmd_vel_out \
+/wheebot_controller/odom \
+/controller_manager/activity \
+/controller_manager/introspection_data/full \
+/controller_manager/introspection_data/names \
+/controller_manager/introspection_data/values \
+/controller_manager/statistics/full \
+/controller_manager/statistics/names \
+/controller_manager/statistics/values \
+/joint_state_broadcaster/transition_event \
+/wheebot_controller/transition_event
+
+
+with scan:
 
 ros2 bag record \
 /camera/accel/imu_info \

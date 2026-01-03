@@ -56,13 +56,22 @@ def generate_launch_description():
             'approx_rgbd_sync': 'true',
             'approx_sync_max_interval': '0.05',
 
+            # simulation
+            # 'rgb_topic': '/camera/image',
+            # 'depth_topic': '/camera/depth_image',
+            # 'camera_info_topic': '/camera/camera_info',
+            # 'imu_topic': '/camera/imu',
+            
+            # real
             'rgb_topic': '/camera/color/image_raw',
             'depth_topic': '/camera/depth/image_rect_raw',
             'camera_info_topic': '/camera/color/camera_info',
+            'imu_topic': '/imu/data',
 
             # 'rgb_topic': '/dor/inpainted/image',
             # 'depth_topic': '/dor/inpainted/depth',
             # 'camera_info_topic': '/camera/color/camera_info',
+            # 'imu_topic': '/imu/data',
 
             'subscribe_rgbd': 'false',
 
@@ -76,7 +85,6 @@ def generate_launch_description():
             'odom_topic': 'odom',
             'publish_tf_odom': 'true',
 
-            'imu_topic': '/imu/data',
             'wait_imu_to_init': 'true',
             'always_check_imu_tf': 'false',
 

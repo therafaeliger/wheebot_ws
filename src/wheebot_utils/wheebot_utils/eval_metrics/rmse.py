@@ -23,6 +23,6 @@ def compute_rmse_pointcloud(pcd1_path, pcd2_path):
     print(f"RMSE: {rmse:.6f} m")
     print(f"MAE : {mae:.6f} m")
 
-compute_rmse_pointcloud("/home/rafael/Downloads/test5411.ply", "/home/rafael/Downloads/test5411dor.ply")
+compute_rmse_pointcloud("/home/rafael/Downloads/testvan.ply", "/home/rafael/Downloads/testdor.ply")
 print("\n")
-compute_rmse_pointcloud("/home/rafael/Downloads/test5411.ply", "/home/rafael/Downloads/testdorbebas.ply")
+# compute_rmse_pointcloud("/home/rafael/Downloads/test5411.ply", "/home/rafael/Downloads/testdorbebas.ply")

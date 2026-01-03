@@ -35,9 +35,9 @@ def generate_launch_description():
                 'rgb_camera.profile': '640x360x30',
                 'depth_module.depth_profile': '640x360x30',
                 
-                'spatial_filter.enable': 'true',
-                'temporal_filter.enable': 'true',
-                'hole_filling_filter.enable': 'true',
+                'spatial_filter.enable': 'false',
+                'temporal_filter.enable': 'false',
+                'hole_filling_filter.enable': 'false',
             }.items(),
         ),
         
@@ -58,18 +58,18 @@ def generate_launch_description():
             ],
         ),
 
-        # Launch RPLiDAR
-        Node(
-            package='rplidar_ros',
-            executable='rplidar_composition',
-            name='rplidar_a1',
-            output='screen',
-            parameters=[{
-                'serial_port': '/dev/ttyUSB1', # periksa kalau pakai mikon
-                'serial_baudrate': 115200,
-                'frame_id': 'laser_link',
-                'inverted': False,
-                'angle_compensate': True,
-            }]
-        ),
+        # # Launch RPLiDAR
+        # Node(
+        #     package='rplidar_ros',
+        #     executable='rplidar_composition',
+        #     name='rplidar_a1',
+        #     output='screen',
+        #     parameters=[{
+        #         'serial_port': '/dev/ttyUSB1', # periksa kalau pakai mikon
+        #         'serial_baudrate': 115200,
+        #         'frame_id': 'laser_link',
+        #         'inverted': False,
+        #         'angle_compensate': True,
+        #     }]
+        # ),
     ])

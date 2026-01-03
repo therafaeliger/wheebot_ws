@@ -128,12 +128,12 @@ def generate_launch_description():
     )
     
     return LaunchDescription([
-        hardware_interface,
+        # hardware_interface,
         # sensor_run,
-        sensor_run_delayed,
+        # sensor_run_delayed,
         # lidar_filter,
 
-        controller,
+        # controller,
         # joystick,
 
         # mode 1: using fused odometry
@@ -146,6 +146,6 @@ def generate_launch_description():
         # navigation,
 
         static_tf_camera,
-        static_tf_lidar,
+        # static_tf_lidar,
         
     ])

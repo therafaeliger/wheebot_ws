@@ -4,20 +4,32 @@ import sys
 from typing import Tuple
 import numpy as np
 
-# --- Loader: use Pillow for PGM ---
+# --- Loader: use Pillow for generic images (PNG, JPG, PGM, etc.) ---
 try:
     from PIL import Image
 except ImportError:
     print("Error: Paket Pillow belum terpasang. Instal dengan: pip install Pillow", file=sys.stderr)
     sys.exit(1)
 
-def load_pgm(path: str) -> np.ndarray:
-    """Load PGM as grayscale ndarray (float64). Preserves 8/16-bit depth."""
-    img = Image.open(path)
-    # Do NOT force to 8-bit; keep as-is to maintain dynamic range
-    arr = np.array(img)
-    # convert to float64 for numeric stability
-    return arr.astype(np.float64, copy=False)
+def load_image(path: str) -> np.ndarray:
+    """
+    Load image (PNG, JPG, PGM) as grayscale ndarray (float64).
+    Auto converts RGB to Grayscale ('L') to ensure 2D structure.
+    """
+    try:
+        img = Image.open(path)
+        
+        # Konversi ke grayscale (L) jika gambar berwarna (RGB/RGBA)
+        # SSIM standar bekerja pada channel luma (intensitas)
+        if img.mode != 'L':
+            img = img.convert('L')
+            
+        arr = np.array(img)
+        # convert to float64 for numeric stability
+        return arr.astype(np.float64, copy=False)
+    except Exception as e:
+        print(f"Error loading image {path}: {e}", file=sys.stderr)
+        sys.exit(1)
 
 # --- Optional: skimage SSIM if available ---
 def try_skimage_ssim(img1: np.ndarray, img2: np.ndarray, data_range: float, gaussian: bool, win_size: int) -> Tuple[bool, float]:
@@ -41,9 +53,7 @@ def integral_image(a: np.ndarray) -> np.ndarray:
     return np.pad(ii, ((1, 0), (1, 0)), mode="constant")
 
 def box_sum(ii: np.ndarray, w: int, H: int, W: int) -> np.ndarray:
-    # Sum over all WxW windows with top-left positions covering the original HxW (after padding before integral)
-    # Using inclusion-exclusion on integral image:
-    # S(i,j) = I[i+w, j+w] - I[i, j+w] - I[i+w, j] + I[i, j]
+    # Sum over all WxW windows with top-left positions covering the original HxW
     A = ii[w:w+H,     w:w+W]
     B = ii[0:H,       w:w+W]
     C = ii[w:w+H,     0:W]
@@ -96,7 +106,6 @@ def ssim_uniform(img1: np.ndarray, img2: np.ndarray, data_range: float, win_size
     denominator = (mu_x * mu_x + mu_y * mu_y + C1) * (sigma_x2 + sigma_y2 + C2)
 
     ssim_map = numerator / (denominator + 1e-12)
-    # Clamp numerics
     ssim_map = np.clip(ssim_map, -1.0, 1.0)
 
     return float(np.mean(ssim_map))
@@ -105,35 +114,42 @@ def infer_data_range(img1: np.ndarray, img2: np.ndarray, override: float = None)
     if override is not None:
         return float(override)
     # Heuristic: use dtype-based range if integer; else use max-min across both
-    if np.issubdtype(img1.dtype, np.integer) and np.issubdtype(img2.dtype, np.integer):
-        if img1.dtype == np.uint16 or img2.dtype == np.uint16:
+    # Note: img1 loaded via PIL convert('L') usually results in generic float after astype
+    # but the original values were likely 0-255.
+    
+    current_max = max(img1.max(), img2.max())
+    if current_max > 1.0:
+        # Kemungkinan besar range 0-255 (8-bit) atau 0-65535 (16-bit)
+        if current_max > 255:
             return 65535.0
         return 255.0
-    # fallback: dynamic range across both
-    return float(max(img1.max(), img2.max()) - min(img1.min(), img2.min()))
+    
+    # Jika nilainya ternormalisasi 0.0-1.0
+    return 1.0
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Hitung SSIM antara dua file PGM dan cetak ke terminal."
+        description="Hitung SSIM antara dua gambar (PNG/JPG/PGM) dan cetak ke terminal."
     )
-    parser.add_argument("pgm1", help="Path ke PGM pertama")
-    parser.add_argument("pgm2", help="Path ke PGM kedua")
+    parser.add_argument("img1", help="Path ke gambar pertama (Reference)")
+    parser.add_argument("img2", help="Path ke gambar kedua (Distorted)")
     parser.add_argument("--win-size", type=int, default=11, help="Ukuran jendela (ganjil), default=11")
     parser.add_argument("--data-range", type=float, default=None,
-                        help="Range intensitas (L). Jika tidak diisi: 255 utk 8-bit, 65535 utk 16-bit, else max-min.")
+                        help="Range intensitas (L). Jika kosong, akan ditebak (biasanya 255).")
     parser.add_argument("--prefer-skimage", action="store_true",
                         help="Jika tersedia, pakai skimage (Gaussian window).")
     args = parser.parse_args()
 
-    img1 = load_pgm(args.pgm1)
-    img2 = load_pgm(args.pgm2)
+    img1 = load_image(args.img1)
+    img2 = load_image(args.img2)
 
+    # Validasi dimensi (harusnya sudah 2D karena convert L)
     if img1.ndim != 2 or img2.ndim != 2:
-        print("Error: File harus grayscale 2D (PGM).", file=sys.stderr)
+        print("Error: Gambar harus 2D (Grayscale).", file=sys.stderr)
         sys.exit(2)
 
     if img1.shape != img2.shape:
-        print(f"Error: Ukuran tidak sama: {img1.shape} vs {img2.shape}", file=sys.stderr)
+        print(f"Error: Ukuran tidak sama: {img1.shape} vs {img2.shape}. Pastikan resolusi sama.", file=sys.stderr)
         sys.exit(2)
 
     data_range = infer_data_range(img1, img2, args.data_range)
