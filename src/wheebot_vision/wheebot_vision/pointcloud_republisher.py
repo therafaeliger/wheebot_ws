@@ -19,10 +19,19 @@ class PointcloudRepublisher(Node):
         self.declare_parameter('sync_slop', 0.05)
         self.declare_parameter('sync_queue_size', 10)
         self.declare_parameter('frame_id', '') # optional override
+        self.declare_parameter('camera_info_topic', '/camera/camera_info')
+        self.declare_parameter('camera_depth_topic', '/camera/depth_image')
+        self.declare_parameter('mask_dynamic_topic', '/yolo/mask/dynamic_only')
+        self.declare_parameter('mask_static_topic', '/yolo/mask/static_only')
+        
 
         slop = float(self.get_parameter('sync_slop').value)
         queue = int(self.get_parameter('sync_queue_size').value)
         frame_override = self.get_parameter('frame_id').value.strip()
+        self.camera_info_topic = self.get_parameter('camera_info_topic').value
+        self.camera_depth_topic = self.get_parameter('camera_depth_topic').value
+        self.mask_dynamic_topic = self.get_parameter('mask_dynamic_topic').value
+        self.mask_static_topic = self.get_parameter('mask_static_topic').value
 
         self.bridge = CvBridge()
 
@@ -31,16 +40,16 @@ class PointcloudRepublisher(Node):
 
         # subscriber
         self.camera_info_sub = self.create_subscription(
-            CameraInfo, '/camera/color/camera_info', self.cameraInfoCallback, 10
+            CameraInfo, self.camera_info_topic, self.cameraInfoCallback, 10
         )
         self.depth_sub = Subscriber(
-            self, Image, '/camera/aligned_depth_to_color/image_raw', qos_profile=sensor_qos
+            self, Image, self.camera_depth_topic, qos_profile=sensor_qos
         )
         self.mask_dynamic_sub = Subscriber(
-            self, Image, '/yolo/mask/dynamic_only', qos_profile=sensor_qos
+            self, Image, self.mask_dynamic_topic, qos_profile=sensor_qos
         )
         self.mask_static_sub = Subscriber(
-            self, Image, '/yolo/mask/static_only', qos_profile=sensor_qos
+            self, Image, self.mask_static_topic, qos_profile=sensor_qos
         )
 
         # publisher
@@ -65,7 +74,13 @@ class PointcloudRepublisher(Node):
         self.v = None
         self._last_shape = None
 
+        self.get_logger().info(f"----------------------------------------------------------------")
         self.get_logger().info(f"Pointcloud Republisher Node started")
+        self.get_logger().info(f"Subscribing to Camera Info: {self.camera_info_topic}")
+        self.get_logger().info(f"Subscribing to Depth Image: {self.camera_depth_topic}")
+        self.get_logger().info(f"Subscribing to Dynamic Mask: {self.mask_dynamic_topic}")
+        self.get_logger().info(f"Subscribing to Static Mask: {self.mask_static_topic}")
+        self.get_logger().info(f"----------------------------------------------------------------")
 
 
     def cameraInfoCallback(self, msg: CameraInfo):

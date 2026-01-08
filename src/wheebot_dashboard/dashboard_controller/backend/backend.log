@@ -1,0 +1,23 @@
+[INFO] [1767844284.668067426] [wheebot_webui_node]: Subscribed ODOM: /odom
+/home/rafael/wheebot_ws/src/wheebot_dashboard/dashboard_controller/backend/main.py:312: DeprecationWarning: 
+        on_event is deprecated, use lifespan event handlers instead.
+
+        Read more about it in the
+        [FastAPI docs for Lifespan Events](https://fastapi.tiangolo.com/advanced/events/).
+        
+  @app.on_event("startup")
+INFO:     Started server process [8113]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+INFO:     127.0.0.1:37048 - "WebSocket /ws" [accepted]
+INFO:     connection open
+[INFO] [1767844290.424110824] [wheebot_webui_node]: Subscribed MAP: /map
+[INFO] [1767844290.431449146] [wheebot_webui_node]: Subscribed IMAGE: /camera/color/image_raw
+[INFO] [1767844290.432331181] [wheebot_webui_node]: Subscribed SCAN: /scan
+[INFO] [1767844290.433333920] [wheebot_webui_node]: Subscribed ODOM: /odom
+INFO:     connection closed
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [8113]

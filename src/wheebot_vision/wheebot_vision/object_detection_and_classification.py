@@ -30,6 +30,8 @@ class ObjectDetectionAndClassification(Node):
         self.declare_parameter('mask_dilate', 2)
         self.declare_parameter('conf_thres', 0.5)
         self.declare_parameter('show_debug', True)
+        self.declare_parameter('camera_info_topic', '/camera/camera_info')
+        self.declare_parameter('camera_image_topic', '/camera/image')
 
         model_path = self.get_parameter('yolo_model').value
         self.dynamic_classes = set(self.get_parameter('dynamic_classes').value)
@@ -37,6 +39,8 @@ class ObjectDetectionAndClassification(Node):
         self.mask_dilate = int(self.get_parameter('mask_dilate').value)
         self.conf_thres = float(self.get_parameter('conf_thres').value)
         self.show_debug = bool(self.get_parameter('show_debug').value)
+        self.camera_info_topic = self.get_parameter('camera_info_topic').value
+        self.camera_image_topic = self.get_parameter('camera_image_topic').value
 
         # declare object detection model
         self.model = YOLO(model_path)
@@ -49,13 +53,13 @@ class ObjectDetectionAndClassification(Node):
         # QoS Profile
         sensor_qos = QoSProfile(depth=10, reliability=ReliabilityPolicy.BEST_EFFORT, durability=DurabilityPolicy.VOLATILE)
 
-        # subscriber
+        # subscriber        
         self.camera_info_sub = self.create_subscription(
-            CameraInfo, '/camera/color/camera_info', self.cameraInfoCallback, 10
+            CameraInfo, self.camera_info_topic, self.cameraInfoCallback, 10
         )
         self.image_worker = ThreadPoolExecutor(max_workers=1)
         self.image_sub = self.create_subscription(
-            Image, '/camera/color/image_raw',
+            Image, self.camera_image_topic,
             # self.imageCallback,
             lambda msg: self.image_worker.submit(self.imageCallback, msg),
             qos_profile=sensor_qos
@@ -79,7 +83,12 @@ class ObjectDetectionAndClassification(Node):
         # cache
         self.camera_frame = 'camera_color_optical_frame'
         
+        self.get_logger().info(f"----------------------------------------------------------------")
         self.get_logger().info(f"Object Detection and Classification Node started with model: {model_path}")
+        self.get_logger().info(f"Subscribing to Camera Info: {self.camera_info_topic}")
+        self.get_logger().info(f"Subscribing to Image: {self.camera_image_topic}")
+        self.get_logger().info(f"----------------------------------------------------------------")
+
 
     def cameraInfoCallback(self, msg: CameraInfo):
         if msg.header.frame_id:

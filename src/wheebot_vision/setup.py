@@ -27,14 +27,9 @@ setup(
     },
     entry_points={
         'console_scripts': [
-            'camera_sub = wheebot_vision.camera_sub:main',
-            'camera_pub = wheebot_vision.camera_pub:main',
-            'full_system = wheebot_vision.full_system:main',
             'object_detection_and_classification = wheebot_vision.object_detection_and_classification:main',
             'dynamic_object_removal = wheebot_vision.dynamic_object_removal:main',
             'pointcloud_republisher = wheebot_vision.pointcloud_republisher:main',
-            'image_color_decompressor = wheebot_vision.image_color_decompressor:main',
-            'image_depth_decompressor = wheebot_vision.image_depth_decompressor:main',
         ],
     },
 )

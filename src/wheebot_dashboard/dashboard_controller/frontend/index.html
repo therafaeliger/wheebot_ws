@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>WheeBot Controller</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+<div class="wrap">
+  <header class="topbar">
+    <div class="brand"><i class="fas fa-bolt"></i> WheeBot Controller</div>
+    
+    <div class="status-block" id="statusContainer">
+      <div class="badge neutral"><i class="fas fa-circle-notch fa-spin"></i> Connecting...</div>
+    </div>
+  </header>
+
+  <main class="grid">
+    <section class="panel map-panel">
+      <div class="panel-head">
+        <div class="title"><i class="fas fa-map"></i> NAVIGATION MAP</div>
+        
+        <div style="display:flex; gap:10px;">
+            <label style="font-size:12px; font-weight:600; display:flex; align-items:center; gap:5px;">
+              Map: <input type="text" id="mapTopic" class="topic-input" value="/map" style="width:120px;" />
+            </label>
+            <label style="font-size:12px; font-weight:600; display:flex; align-items:center; gap:5px;">
+              Odom: <input type="text" id="odomTopic" class="topic-input" value="/odom" style="width:120px;" />
+            </label>
+        </div>
+      </div>
+      
+      <canvas id="mapCanvas"></canvas>
+      
+      <div class="map-actions">
+        <div class="map-hint">
+          <i class="fas fa-crosshairs"></i> Goal: <span id="posePick" style="font-weight:bold; color:#007BFF">None</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel right-col">
+      <div class="block">
+        <button id="estopBtn" class="estop"><i class="fas fa-ban"></i> EMERGENCY STOP</button>
+      </div>
+
+      <div class="block" style="text-align:center;">
+        <div class="title" style="margin-bottom:10px;">MANUAL CONTROL</div>
+        <div class="wasd">
+          <button id="btnW"><i class="fas fa-chevron-up"></i></button>
+          <div class="mid">
+            <button id="btnA"><i class="fas fa-chevron-left"></i></button>
+            <button id="btnS"><i class="fas fa-chevron-down"></i></button>
+            <button id="btnD"><i class="fas fa-chevron-right"></i></button>
+          </div>
+        </div>
+        <small style="color:#888;">Hold to move</small>
+      </div>
+
+      <div class="block">
+        <div class="title">AUTONOMOUS</div>
+        <button id="navToPoseBtn"><i class="fas fa-location-arrow"></i> Start Navigation</button>
+      </div>
+    </section>
+  </main>
+
+  <section class="bottom-strip">
+    <div class="mini">
+      <div class="panel-head">
+        <div class="title"><i class="fas fa-video"></i> LIVE CAMERA</div>
+        <input type="text" id="imgTopic" class="topic-input-mini" value="/camera/color/image_raw" />
+      </div>
+      <img id="imgPreview" alt="No Stream" />
+    </div>
+
+    <div class="mini">
+      <div class="panel-head">
+        <div class="title"><i class="fas fa-bullseye"></i> LIDAR SCAN</div>
+        <input type="text" id="scanTopic" class="topic-input-mini" value="/scan" />
+      </div>
+      <canvas id="scanMini"></canvas>
+    </div>
+  </section>
+</div>
+
+<script>
+const ws = new WebSocket("ws://localhost:8000/ws");
+
+// DOM Refs
+const statusContainer = document.getElementById("statusContainer");
+const estopBtn = document.getElementById("estopBtn");
+const imgPreview = document.getElementById("imgPreview");
+const posePick = document.getElementById("posePick");
+const mapCanvas = document.getElementById("mapCanvas");
+const scanMini = document.getElementById("scanMini");
+const navBtn = document.getElementById("navToPoseBtn");
+
+// Topics
+const mapTopic = document.getElementById("mapTopic");
+const odomTopic = document.getElementById("odomTopic");
+const imgTopic = document.getElementById("imgTopic");
+const scanTopic = document.getElementById("scanTopic");
+
+let estopActive = false;
+let holdInterval = null;
+let chosenPose = null; // [x, y, yaw]
+
+// --- 1. STATUS BADGE GENERATOR (DIPERBAIKI DENGAN IKON) ---
+function renderStatus(data) {
+  let html = "";
+  
+  // Robot Status
+  const rbtIcon = (data.rbt_status === "ON") ? "fa-robot" : "fa-robot";
+  const rbtClass = (data.rbt_status === "ON") ? "ok" : "err";
+  html += `<div class="badge ${rbtClass}">
+             <i class="fas ${rbtIcon}"></i> 
+             <span>ROBOT: ${data.rbt_status}</span>
+           </div>`;
+
+  // Ports
+  if (data.ports) {
+    // Lidar
+    const lidarClass = data.ports.lidar ? "ok" : "err";
+    const lidarIcon = data.ports.lidar ? "fa-wifi" : "fa-exclamation-circle";
+    html += `<div class="badge ${lidarClass}">
+               <i class="fas ${lidarIcon}"></i> LIDAR
+             </div>`;
+    
+    // Arduino
+    const ardClass = data.ports.arduino ? "ok" : "err";
+    html += `<div class="badge ${ardClass}">
+               <i class="fas fa-microchip"></i> MCU
+             </div>`;
+    
+    // Camera
+    const camCount = (data.ports.realsense_videos || []).length;
+    const camClass = camCount > 0 ? "ok" : "warn";
+    html += `<div class="badge ${camClass}">
+               <i class="fas fa-camera"></i> CAM: ${camCount}
+             </div>`;
+  }
+
+  statusContainer.innerHTML = html;
+}
+
+// --- 2. DRAW MAP (DIPERBAIKI: BENTUK ROBOT PANAH NAVIGASI) ---
+function drawMap(canvas, meta, data, robot, goal) {
+  const ctx = canvas.getContext("2d");
+  if (!meta || !data) { ctx.clearRect(0,0,canvas.width,canvas.height); return; }
+
+  const [w, h, res, [ox, oy]] = meta;
+  
+  const displayW = canvas.clientWidth;
+  const displayH = canvas.clientHeight;
+  const scale = Math.min(displayW / w, displayH / h);
+  
+  canvas.width = Math.floor(w * scale);
+  canvas.height = Math.floor(h * scale);
+  
+  // A. Grid Map
+  const imgData = ctx.createImageData(w, h);
+  for (let i = 0; i < w * h; i++) {
+    const val = data[i];
+    let r=205, g=205, b=205; // Unknown
+    if (val === 0) { r=255; g=255; b=255; } // Free
+    else if (val > 0) { r=30; g=30; b=40; } // Occupied (Dark Blueish)
+    
+    imgData.data[i*4+0] = r;
+    imgData.data[i*4+1] = g;
+    imgData.data[i*4+2] = b;
+    imgData.data[i*4+3] = 255;
+  }
+  
+  const tmp = document.createElement("canvas");
+  tmp.width = w; tmp.height = h;
+  tmp.getContext("2d").putImageData(imgData, 0, 0);
+
+  ctx.save();
+  ctx.scale(scale, scale);
+  ctx.translate(0, h);
+  ctx.scale(1, -1);
+  ctx.drawImage(tmp, 0, 0);
+
+  function worldToMap(wx, wy) {
+    return [(wx - ox) / res, (wy - oy) / res];
+  }
+
+  // B. Goal Marker
+  if (goal) {
+    const [gx, gy] = goal;
+    const [mgx, mgy] = worldToMap(gx, gy);
+    
+    ctx.save();
+    ctx.translate(mgx, mgy);
+    ctx.scale(1, -1); 
+
+    // Target Pin Style
+    ctx.shadowColor = "rgba(0, 200, 81, 0.5)"; ctx.shadowBlur = 10;
+    ctx.fillStyle = "#00c851"; 
+    ctx.beginPath(); ctx.arc(0, 0, 4, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(0, 0, 8, 0, Math.PI*2); 
+    ctx.strokeStyle = "#00c851"; ctx.lineWidth=1.5; ctx.stroke();
+    
+    ctx.restore();
+  }
+
+  // C. Robot Marker (Bentuk Panah Navigasi)
+  if (robot) {
+    const [rx, ry, yaw] = robot;
+    const [mrx, mry] = worldToMap(rx, ry);
+
+    ctx.save();
+    ctx.translate(mrx, mry);
+    ctx.rotate(yaw);
+
+    // BENTUK BARU: Panah Navigasi (Arrow Head)
+    ctx.beginPath();
+    ctx.moveTo(12, 0);    // Ujung Depan (Runcing)
+    ctx.lineTo(-8, 8);    // Sayap Kiri Belakang
+    ctx.lineTo(-4, 0);    // Titik Tengah Belakang (Notch)
+    ctx.lineTo(-8, -8);   // Sayap Kanan Belakang
+    ctx.closePath();
+
+    // Style Robot
+    ctx.fillStyle = "#007BFF"; 
+    ctx.shadowColor = "rgba(0, 123, 255, 0.6)";
+    ctx.shadowBlur = 10;
+    ctx.fill();
+    
+    ctx.strokeStyle = "#ffffff";
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+
+    ctx.restore();
+  }
+
+  ctx.restore();
+}
+
+// --- 3. EVENT HANDLERS (Sama seperti sebelumnya) ---
+mapCanvas.addEventListener("click", (e) => {
+  if (!latest.meta) return;
+  const rect = mapCanvas.getBoundingClientRect();
+  const u = (e.clientX - rect.left) / rect.width;
+  const v = 1.0 - (e.clientY - rect.top) / rect.height;
+  const [w, h, res, [ox, oy]] = latest.meta;
+  const mx = u * w; const my = v * h;
+  const x = ox + mx * res; const y = oy + my * res;
+
+  chosenPose = [x, y, 0.0];
+  posePick.textContent = `X: ${x.toFixed(2)}, Y: ${y.toFixed(2)}`;
+  drawMap(mapCanvas, latest.meta, latest.data, latest.robot, chosenPose);
+});
+
+function sendJSON(obj){ ws.send(JSON.stringify(obj)); }
+function sendVel(lx, az){ if (!estopActive) sendJSON({type:"vel", linear_x: lx, angular_z: az}); }
+function setTopics(){
+  sendJSON({ type: "set_topics", map: mapTopic.value, image: imgTopic.value, scan: scanTopic.value, odom: odomTopic.value });
+}
+[mapTopic, odomTopic, imgTopic, scanTopic].forEach(sel => sel.addEventListener("change", setTopics));
+
+estopBtn.addEventListener("click", ()=>{
+  estopActive = !estopActive;
+  if(estopActive) sendVel(0,0);
+  sendJSON({type:"estop", active: estopActive});
+  estopBtn.classList.toggle("on", estopActive);
+  estopBtn.innerHTML = estopActive ? '<i class="fas fa-ban"></i> E-STOP ACTIVE' : '<i class="fas fa-stop-circle"></i> EMERGENCY STOP';
+});
+
+navBtn.addEventListener("click", ()=>{
+  if(!chosenPose) { alert("Klik peta dulu untuk set tujuan!"); return; }
+  sendJSON({type:"nav_to_pose", x: chosenPose[0], y: chosenPose[1], yaw: 0.0});
+});
+
+// WASD
+function startHold(lx, az){
+  if (holdInterval) clearInterval(holdInterval);
+  sendVel(lx, az); holdInterval = setInterval(()=> sendVel(lx, az), 80);
+}
+function stopHold(){ if(holdInterval) clearInterval(holdInterval); sendVel(0,0); }
+const ids = {btnW:[1,0], btnS:[-1,0], btnA:[0,1], btnD:[0,-1]};
+Object.keys(ids).forEach(k => {
+  const el = document.getElementById(k);
+  el.addEventListener("mousedown", ()=> startHold(...ids[k]));
+  el.addEventListener("mouseup", stopHold);
+  el.addEventListener("mouseleave", stopHold);
+});
+document.addEventListener("keydown", (e)=>{
+  if(e.repeat || e.target.tagName==="INPUT") return;
+  const k=e.key.toLowerCase();
+  if(k==='w') startHold(1,0); if(k==='s') startHold(-1,0);
+  if(k==='a') startHold(0,1); if(k==='d') startHold(0,-1);
+});
+document.addEventListener("keyup", (e)=>{ if(["w","a","s","d"].includes(e.key.toLowerCase())) stopHold(); });
+
+function drawXY(canvas, points){
+  const ctx = canvas.getContext("2d");
+  const W = canvas.width = canvas.clientWidth;
+  const H = canvas.height = canvas.clientHeight;
+  // Clear background for scan
+  ctx.fillStyle = "#111"; ctx.fillRect(0,0,W,H); 
+  
+  ctx.fillStyle = "#0f0"; // Green radar points
+  const cx = W/2, cy = H/2, scale = 40;
+  points.forEach(([x,y]) => ctx.fillRect(cx + x*scale, cy - y*scale, 2, 2));
+}
+
+const latest = { meta:null, data:null, robot:null };
+ws.onmessage = (msg)=>{
+  const data = JSON.parse(msg.data);
+  if(data.type === "nav_feedback") { alert(data.msg); return; }
+  if(data.type !== "tick") return;
+
+  renderStatus(data);
+  estopActive = !!data.estop;
+  estopBtn.classList.toggle("on", estopActive);
+  
+  if(data.image) imgPreview.src = data.image;
+  if(data.scan_xy) drawXY(scanMini, data.scan_xy);
+
+  if(data.map && data.map.meta) { latest.meta = data.map.meta; latest.data = data.map.data; }
+  latest.robot = data.odom;
+  if(latest.meta) drawMap(mapCanvas, latest.meta, latest.data, latest.robot, chosenPose);
+};
+ws.addEventListener("open", setTopics);
+</script>
+</body>
+</html>

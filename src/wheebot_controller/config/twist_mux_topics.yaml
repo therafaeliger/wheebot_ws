@@ -7,9 +7,9 @@ twist_mux:
         timeout : 0.5
         priority: 99
       keyboard: 
-        topic   : key_vel
+        topic   : key_vel_unstamped
         timeout : 0.5
-        priority: 90
+        priority: 99
       navigation:
         topic   : cmd_vel
         timeout : 0.5

@@ -21,6 +21,13 @@ public:
         );
         joy_pub_ = this->create_publisher<geometry_msgs::msg::Twist>(
             "/input_joy/cmd_vel", 10);
+        key_sub_ = this->create_subscription<geometry_msgs::msg::TwistStamped>(
+            "/key_vel",
+            10,
+            std::bind(&TwistRelayNode::key_twist_callback, this, std::placeholders::_1)
+        );
+        key_pub_ = this->create_publisher<geometry_msgs::msg::Twist>(
+            "/key_vel_unstamped", 10);
     }
 
 private:
@@ -39,10 +46,19 @@ private:
         joy_pub_->publish(twist);
     }
 
+    void key_twist_callback(const geometry_msgs::msg::TwistStamped::SharedPtr msg)
+    {
+        geometry_msgs::msg::Twist twist;
+        twist = msg->twist;
+        key_pub_->publish(twist);
+    }
+
     rclcpp::Subscription<geometry_msgs::msg::Twist>::SharedPtr controller_sub_;
     rclcpp::Publisher<geometry_msgs::msg::TwistStamped>::SharedPtr controller_pub_;
     rclcpp::Subscription<geometry_msgs::msg::TwistStamped>::SharedPtr joy_sub_;
     rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr joy_pub_;
+    rclcpp::Subscription<geometry_msgs::msg::TwistStamped>::SharedPtr key_sub_;
+    rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr key_pub_;
 };
 
 int main(int argc, char * argv[])

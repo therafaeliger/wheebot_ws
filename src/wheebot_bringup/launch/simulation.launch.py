@@ -1,117 +1,164 @@
 import os
 from launch import LaunchDescription
-from launch.actions import IncludeLaunchDescription
+from launch.actions import IncludeLaunchDescription, DeclareLaunchArgument, TimerAction
+from launch.launch_description_sources import PythonLaunchDescriptionSource
+from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import Node
 from ament_index_python.packages import get_package_share_directory
 
-
 def generate_launch_description():
-    # run gazebo simulator using world
+    # --- 1. Deklarasi Argumen ---
+    
+    # Argumen Waktu Simulasi
+    use_sim_time_arg = DeclareLaunchArgument(
+        'use_sim_time',
+        default_value='true',
+        description='Use simulation (Gazebo) clock if true'
+    )
+    
+    # Argumen SLAM / RTAB-Map
+    localization_mode_arg = DeclareLaunchArgument(
+        'localization_mode',
+        default_value='false', # Sesuai request: default true (lokalisasi)
+        description='Launch RTAB-Map in localization mode'
+    )
+    
+    use_dor_arg = DeclareLaunchArgument(
+        'use_dor',
+        default_value='true', # Sesuai request: default true
+        description='Use Dynamic Object Removal topics'
+    )
+    
+    enable_logging_arg = DeclareLaunchArgument(
+        'enable_logging',
+        default_value='false', # Sesuai request: default false
+        description='Enable logging to custom DB path'
+    )
+    
+    delete_db_arg = DeclareLaunchArgument(
+        'delete_db_on_start',
+        default_value='true', # Sesuai request: default true
+        description='Delete database on start (ignored if localization is true)'
+    )
+
+    # --- 2. Konfigurasi Variabel ---
+    use_sim_time = LaunchConfiguration('use_sim_time')
+    localization_mode = LaunchConfiguration('localization_mode')
+    use_dor = LaunchConfiguration('use_dor')
+    enable_logging = LaunchConfiguration('enable_logging')
+    delete_db_on_start = LaunchConfiguration('delete_db_on_start')
+
+    # --- 3. Include Launch Files ---
+
+    # A. Run Gazebo simulator
     gazebo = IncludeLaunchDescription(
-        os.path.join(
-            get_package_share_directory("wheebot_description"),
-            "launch",
-            "gazebo.launch.py"
+        PythonLaunchDescriptionSource(
+            os.path.join(
+                get_package_share_directory("wheebot_description"),
+                "launch",
+                "gazebo.launch.py"
+            )
         ),
         launch_arguments={
             "world_name": "small_house"
         }.items()
     )
     
-    # run controller
+    # B. Run Controller
     controller = IncludeLaunchDescription(
-        os.path.join(
-            get_package_share_directory("wheebot_controller"),
-            "launch",
-            "controller.launch.py"
+        PythonLaunchDescriptionSource(
+            os.path.join(
+                get_package_share_directory("wheebot_controller"),
+                "launch",
+                "controller.launch.py"
+            )
         ),
         launch_arguments={
-            "use_sim_time": "True"
+            "use_sim_time": use_sim_time
         }.items(),
     )
+
+    # C. Run Teleop dan Twist Mux
     joystick = IncludeLaunchDescription(
-        os.path.join(
-            get_package_share_directory("wheebot_controller"),
-            "launch",
-            "joystick_teleop.launch.py"
+        PythonLaunchDescriptionSource(
+            os.path.join(
+                get_package_share_directory("wheebot_controller"),
+                "launch",
+                "joystick_teleop.launch.py"
+            )
         ),
         launch_arguments={
-            "use_sim_time": "True"
+            "use_sim_time": use_sim_time
         }.items()
     )
 
-    # mode 1: using fused odometry
-    localization = IncludeLaunchDescription(
-        os.path.join(
-            get_package_share_directory("wheebot_localization"),
-            "launch",
-            "rtabmap_fused_odom.launch.py"
+    # D. Dynamic Object Removal Pipeline (DOR)
+    dor_pipeline = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(
+            os.path.join(
+                get_package_share_directory("wheebot_vision"),
+                "launch",
+                "dor_pipeline.launch.py" 
+            )
         ),
         launch_arguments={
-            "use_sim_time": "True"
-        }.items()
-    )
-    mapping = IncludeLaunchDescription(
-        os.path.join(
-            get_package_share_directory("wheebot_mapping"),
-            "launch",
-            "rtabmap_fused_slam.launch.py"
-        ),
-        launch_arguments={
-            "use_sim_time": "True"
+            "use_sim_time": use_sim_time
         }.items()
     )
 
-    # mode 2: using rtabmap default launch
-    slam = IncludeLaunchDescription(
-        os.path.join(
-            get_package_share_directory("wheebot_mapping"),
-            "launch",
-            "rtabmap_slam.launch.py"
+    # E. RTAB-Map SLAM / Localization (BARU DITAMBAHKAN)
+    rtabmap_slam = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(
+            os.path.join(
+                get_package_share_directory("wheebot_mapping"),
+                "launch",
+                "rtabmap_slam.launch.py"
+            )
         ),
         launch_arguments={
-            "use_sim_time": "True"
+            "use_sim_time": use_sim_time,
+            "localization_mode": localization_mode,
+            "use_dor": use_dor,
+            "enable_logging": enable_logging,
+            "delete_db_on_start": delete_db_on_start
         }.items()
     )
 
-    # launch the nav2
+    delayed_rtabmap = TimerAction(
+        period=25.0,
+        actions=[rtabmap_slam]
+    )
+
+    # F Navigasi
     navigation = IncludeLaunchDescription(
         os.path.join(
             get_package_share_directory("wheebot_navigation"),
             "launch",
             "navigation.launch.py"
         ),
+        launch_arguments={
+            "use_sim_time": use_sim_time
+        }.items()
     )
 
-    # Static TF
-    static_tf_camera = Node(
-        package='tf2_ros',
-        executable='static_transform_publisher',
-        output='screen',
-        arguments=['0.3616', '0.2157', '0.63', '0', '0', '0', 'base_link', 'camera_link']
-    )
-    static_tf_lidar = Node(
-        package='tf2_ros',
-        executable='static_transform_publisher',
-        output='screen',
-        arguments=['0.3036', '0.2157', '0.7', '3.1416', '0', '0', 'base_link', 'laser_link']
+    delayed_navigation = TimerAction(
+        period=30.0,
+        actions=[navigation]
     )
     
     return LaunchDescription([
+        # Arguments
+        use_sim_time_arg,
+        localization_mode_arg,
+        use_dor_arg,
+        enable_logging_arg,
+        delete_db_arg,
+        
+        # Nodes
         gazebo,
-
         controller,
         joystick,
-
-        # mode 1: using fused odometry
-        localization,
-        mapping,
-
-        # mode 2: using rtabmap default launch
-        # slam,
-
-        navigation,
-
-        static_tf_camera,
-        static_tf_lidar,
+        dor_pipeline,
+        delayed_rtabmap,
+        delayed_navigation,
     ])

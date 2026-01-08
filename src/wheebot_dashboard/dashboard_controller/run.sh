@@ -2,7 +2,7 @@
 set -e
 
 echo "Menjalankan backend (FastAPI) di port 8000..."
-cd ~/wheebot_ws/src/wheebot_webui/backend
+cd ~/wheebot_ws/src/wheebot_dashboard/dashboard_controller/backend
 nohup python3 main.py > backend.log 2>&1 &
 BACK_PID=$!
 

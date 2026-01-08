@@ -18,7 +18,7 @@ from cv_bridge import CvBridge
 # ROS msgs
 from geometry_msgs.msg import Twist, TwistStamped, PoseStamped, Quaternion
 from nav_msgs.msg import Odometry, OccupancyGrid
-from sensor_msgs.msg import Image, LaserScan, PointCloud2
+from sensor_msgs.msg import Image, LaserScan 
 from nav2_msgs.action import NavigateToPose
 
 # Converters
@@ -27,12 +27,6 @@ try:
 except Exception:
     BRIDGE = None
     cv2 = None
-
-# PointCloud2 helper
-try:
-    from sensor_msgs_py import point_cloud2
-except Exception:
-    point_cloud2 = None
 
 # initialize API and ROS2
 app = FastAPI()
@@ -44,7 +38,7 @@ class WebInterfaceNode(Node):
         super().__init__('wheebot_webui_node')
 
         # publisher
-        self.key_pub = self.create_publisher(Twist, '/key_vel', 10)
+        self.key_pub = self.create_publisher(Twist, '/key_vel_unstamped', 10)
         self.estop_pub = self.create_publisher(TwistStamped, '/wheebot_controller/cmd_vel', 10)
 
         # subscription
@@ -53,10 +47,11 @@ class WebInterfaceNode(Node):
         self.map_sub = None
         self.image_sub = None
         self.scan_sub = None
-        self.cloud_sub = None
-
+        
         # Fixed: odom for robot pose overlay
-        self.odom_sub = self.create_subscription(Odometry, '/odom', self.odom_cb, 10)
+        # self.odom_sub = self.create_subscription(Odometry, '/odom', self.odom_cb, 10)
+        self.odom_sub = None 
+        self.set_odom_topic('/odom') # Set default awal
 
         # --- State ---
         self.cmd_vel_active = False
@@ -69,7 +64,6 @@ class WebInterfaceNode(Node):
 
         self.last_image_b64 = None
         self.last_scan = None     # downsampled XY list
-        self.last_cloud = None    # downsampled XY list
 
         # Nav2 Action
         self.nav_client = ActionClient(self, NavigateToPose, 'navigate_to_pose')
@@ -121,22 +115,6 @@ class WebInterfaceNode(Node):
             angle += msg.angle_increment * step
         self.last_scan = points[:1500]  # cap
 
-    def cloud_cb(self, msg: PointCloud2):
-        if not point_cloud2:
-            return
-        pts = []
-        # sample up to ~3000 points
-        try:
-            count = 0
-            for p in point_cloud2.read_points(msg, field_names=("x","y"), skip_nans=True):
-                pts.append((float(p[0]), float(p[1])))
-                count += 1
-                if count >= 3000:
-                    break
-            self.last_cloud = pts
-        except Exception as e:
-            self.get_logger().warn(f"cloud_cb error: {e}")
-
     # --- Helpers ---
     @staticmethod
     def quat_to_yaw(q: Quaternion):
@@ -175,6 +153,13 @@ class WebInterfaceNode(Node):
         self.estop_pub.publish(msg)
     
     # Dynamic subscribers
+    def set_odom_topic(self, topic):
+        if self.odom_sub:
+            self.destroy_subscription(self.odom_sub)
+        # Pastikan import Odometry sudah ada
+        self.odom_sub = self.create_subscription(Odometry, topic, self.odom_cb, 10)
+        self.get_logger().info(f"Subscribed ODOM: {topic}")
+
     def set_map_topic(self, topic):
         if self.map_sub:
             self.destroy_subscription(self.map_sub)
@@ -192,12 +177,6 @@ class WebInterfaceNode(Node):
             self.destroy_subscription(self.scan_sub)
         self.scan_sub = self.create_subscription(LaserScan, topic, self.scan_cb, 10)
         self.get_logger().info(f"Subscribed SCAN: {topic}")
-
-    def set_cloud_topic(self, topic):
-        if self.cloud_sub:
-            self.destroy_subscription(self.cloud_sub)
-        self.cloud_sub = self.create_subscription(PointCloud2, topic, self.cloud_cb, 10)
-        self.get_logger().info(f"Subscribed POINTCLOUD: {topic}")
 
     # Nav2 goal
     async def send_nav_goal(self, x, y, yaw):
@@ -252,7 +231,6 @@ async def websocket_endpoint(ws: WebSocket):
     await ws.accept()
 
     # --- Task 1: Receiver ---
-    # Bertugas menerima pesan dari client secepat mungkin
     async def receiver(ws: WebSocket):
         while True:
             try:
@@ -267,34 +245,28 @@ async def websocket_endpoint(ws: WebSocket):
                     ros_node.estop_active = bool(cmd["active"])
                     if ros_node.estop_active:
                         ros_node.get_logger().info("⚠️ E-STOP ACTIVATED")
-                        ros_node.publish_estop()  # force immediately
+                        ros_node.publish_estop() 
                     else:
                         ros_node.get_logger().info("✅ E-STOP RELEASED")
 
                 elif t == "set_topics":
-                    # { map, image, scan, cloud }
+                    # { map, image, scan }
                     if "map" in cmd: ros_node.set_map_topic(cmd["map"])
                     if "image" in cmd: ros_node.set_image_topic(cmd["image"])
                     if "scan" in cmd: ros_node.set_scan_topic(cmd["scan"])
-                    if "cloud" in cmd: ros_node.set_cloud_topic(cmd["cloud"])
+                    if "odom" in cmd: ros_node.set_odom_topic(cmd["odom"])
 
                 elif t == "nav_to_pose":
-                    # { x, y, yaw }
                     ok, msg = await ros_node.send_nav_goal(cmd["x"], cmd["y"], cmd.get("yaw", 0.0))
                     await ws.send_json({"type":"nav_feedback", "ok": ok, "msg": msg})
 
-
-            
             except Exception as e:
-                # print(f"Receiver error: {e}") # Debug
-                break # Keluar dari loop jika koneksi error
+                break 
 
     # --- Task 2: Sender ---
-    # Bertugas mengirim status ke client secara periodik
     async def sender(ws: WebSocket):
         while True:
             try:
-                # Robot ON/OFF status check
                 now = ros_node.get_clock().now()
                 dt = (now - ros_node.last_msg_time).nanoseconds / 1e9
                 rbt_status = "ON" if dt < 2.0 and ros_node.cmd_vel_active else "OFF"
@@ -304,55 +276,43 @@ async def websocket_endpoint(ws: WebSocket):
                     "rbt_status": rbt_status,
                     "estop": ros_node.estop_active,
                     "ports": port_status(),
-                    "image": ros_node.last_image_b64,  # may be None
+                    "image": ros_node.last_image_b64,
                     "map": {
                         "meta": ros_node.map_meta,
                         "data": ros_node.map_data[:(ros_node.map_meta[0]*ros_node.map_meta[1])] if ros_node.map_meta and ros_node.map_data else None
                     },
                     "odom": ros_node.robot_pose,
-                    "scan_xy": ros_node.last_scan,
-                    "cloud_xy": ros_node.last_cloud
+                    "scan_xy": ros_node.last_scan
                 }
                 await ws.send_json(payload)
                 await asyncio.sleep(0.2)
             
             except Exception as e:
-                # print(f"Sender error: {e}") # Debug
-                break # Keluar dari loop jika koneksi error
+                break 
 
-    # --- Menjalankan kedua task secara bersamaan ---
     receiver_task = asyncio.create_task(receiver(ws))
     sender_task = asyncio.create_task(sender(ws))
 
     try:
-        # Tunggu salah satu task selesai (artinya koneksi terputus)
         done, pending = await asyncio.wait(
             {receiver_task, sender_task},
             return_when=asyncio.FIRST_COMPLETED,
         )
-        
-        # Batalkan task yang masih berjalan
         for task in pending:
             task.cancel()
-        
-        # Tunggu pembatalan selesai
         await asyncio.gather(*pending, return_exceptions=True)
 
     except Exception as e:
         print(f"WebSocket connection closed: {e}")
     finally:
-        # Pastikan semua task dibatalkan saat keluar
-        if not receiver_task.done():
-            receiver_task.cancel()
-        if not sender_task.done():
-            sender_task.cancel()
+        if not receiver_task.done(): receiver_task.cancel()
+        if not sender_task.done(): sender_task.cancel()
         print("WebSocket connection cleaned up.")
 
 @app.on_event("startup")
 async def startup_event():
     asyncio.create_task(estop_loop())
 
-# cors
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -361,6 +321,5 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# main
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)
