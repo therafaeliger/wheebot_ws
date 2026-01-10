@@ -174,13 +174,13 @@ def generate_launch_description():
         delete_db_arg,
         
         # Nodes
-        # hardware_interface,
-        # delayed_sensor_run,
-        # controller,
-        # joystick,
+        hardware_interface,
+        delayed_sensor_run,
+        controller,
+        joystick,
         dor_pipeline,
         delayed_rtabmap,
-        # delayed_navigation,
+        delayed_navigation,
 
         # tf (if needed)
         static_tf_camera,

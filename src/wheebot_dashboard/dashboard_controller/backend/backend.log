@@ -1,4 +1,4 @@
-[INFO] [1767844284.668067426] [wheebot_webui_node]: Subscribed ODOM: /odom
+[INFO] [1767854391.141304546] [wheebot_webui_node]: Subscribed ODOM: /odom
 /home/rafael/wheebot_ws/src/wheebot_dashboard/dashboard_controller/backend/main.py:312: DeprecationWarning: 
         on_event is deprecated, use lifespan event handlers instead.
 
@@ -6,18 +6,29 @@
         [FastAPI docs for Lifespan Events](https://fastapi.tiangolo.com/advanced/events/).
         
   @app.on_event("startup")
-INFO:     Started server process [8113]
+INFO:     Started server process [14183]
 INFO:     Waiting for application startup.
 INFO:     Application startup complete.
 INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
-INFO:     127.0.0.1:37048 - "WebSocket /ws" [accepted]
+INFO:     127.0.0.1:57844 - "WebSocket /ws" [accepted]
 INFO:     connection open
-[INFO] [1767844290.424110824] [wheebot_webui_node]: Subscribed MAP: /map
-[INFO] [1767844290.431449146] [wheebot_webui_node]: Subscribed IMAGE: /camera/color/image_raw
-[INFO] [1767844290.432331181] [wheebot_webui_node]: Subscribed SCAN: /scan
-[INFO] [1767844290.433333920] [wheebot_webui_node]: Subscribed ODOM: /odom
+[INFO] [1767854395.892208760] [wheebot_webui_node]: Subscribed MAP: /map
+[INFO] [1767854395.897663664] [wheebot_webui_node]: Subscribed IMAGE: /camera/color/image_raw
+[INFO] [1767854395.899974802] [wheebot_webui_node]: Subscribed SCAN: /scan
+[INFO] [1767854395.902686886] [wheebot_webui_node]: Subscribed ODOM: /odom
 INFO:     connection closed
+INFO:     127.0.0.1:33362 - "WebSocket /ws" [accepted]
+INFO:     connection open
+[INFO] [1767855180.431176470] [wheebot_webui_node]: Subscribed MAP: /map
+[INFO] [1767855180.433824348] [wheebot_webui_node]: Subscribed IMAGE: /camera/color/image_raw
+[INFO] [1767855180.436742018] [wheebot_webui_node]: Subscribed SCAN: /scan
+[INFO] [1767855180.439639279] [wheebot_webui_node]: Subscribed ODOM: /odom
+[INFO] [1767855468.023647967] [wheebot_webui_node]: Subscribed MAP: /map
+[INFO] [1767855468.025332145] [wheebot_webui_node]: Subscribed IMAGE: /camera/color
+[INFO] [1767855468.026650343] [wheebot_webui_node]: Subscribed SCAN: /scan
+[INFO] [1767855468.028170618] [wheebot_webui_node]: Subscribed ODOM: /odom
 INFO:     Shutting down
+INFO:     connection closed
 INFO:     Waiting for application shutdown.
 INFO:     Application shutdown complete.
-INFO:     Finished server process [8113]
+INFO:     Finished server process [14183]
