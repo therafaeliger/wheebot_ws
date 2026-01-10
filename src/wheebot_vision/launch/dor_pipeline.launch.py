@@ -28,12 +28,11 @@ def launch_setup(context, *args, **kwargs):
             parameters=[{
                 'use_sim_time': LaunchConfiguration('use_sim_time'),
                 'yolo_model': 'yolov8n-seg.pt',
-                'dynamic_classes': ['person','car','truck','motorbike','bicycle','bus','dog','cat'],
+                'dynamic_classes': ['person','dog','cat'],
                 'static_classes': ['chair','table','sofa','monitor','tv','bed','refrigerator'],
                 'mask_dilate': 5,
                 'conf_thres': 0.5,
                 'show_debug': True,
-                # Gunakan variabel
                 'camera_info_topic': camera_info_topic,
                 'camera_image_topic': camera_image_topic,
             }]
@@ -45,9 +44,8 @@ def launch_setup(context, *args, **kwargs):
             output='screen',
             parameters=[{
                 'use_sim_time': LaunchConfiguration('use_sim_time'),
-                'inpaint_radius': 3,
+                'inpaint_radius': 1,
                 'mask_topic': '/yolo/mask/dynamic_only',
-                # Gunakan variabel
                 'camera_info_topic': camera_info_topic,
                 'camera_image_topic': camera_image_topic,
                 'camera_depth_topic': camera_depth_topic,
@@ -62,7 +60,6 @@ def launch_setup(context, *args, **kwargs):
                 'use_sim_time': LaunchConfiguration('use_sim_time'),
                 'mask_dynamic_topic': '/yolo/mask/dynamic_only',
                 'mask_static_topic': '/yolo/mask/static_only',
-                # Gunakan variabel
                 'camera_info_topic': camera_info_topic,
                 'camera_depth_topic': camera_depth_topic,
             }],

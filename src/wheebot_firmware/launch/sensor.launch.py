@@ -32,8 +32,8 @@ def generate_launch_description():
                 'align_depth.enable': 'true',
                 'enable_sync': 'true',
 
-                'rgb_camera.profile': '640x360x30',
-                'depth_module.depth_profile': '640x360x30',
+                'rgb_camera.profile': '640x360x15',
+                'depth_module.depth_profile': '640x360x15',
                 
                 'spatial_filter.enable': 'false',
                 'temporal_filter.enable': 'false',

@@ -594,7 +594,7 @@ class PerformanceTab:
 
         # Setup CSV
         timestamp = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
-        base_path = "/home/rafael/wheebot_ws/src/wheebot_dashboard/dashboard_monitoring/results/"
+        base_path = "/home/rfid/wheebot_ws/src/wheebot_dashboard/dashboard_monitoring/results/"
         if not os.path.exists(base_path): base_path = "./" 
 
         fps_path = f"{base_path}fps_log_{timestamp}.csv"
